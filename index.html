@@ -275,7 +275,7 @@ const {useState, useEffect, useMemo, useRef, useCallback} = React;
 /* ============================================================
    ⚙️  CONFIGURAÇÃO — só mexa aqui
    ============================================================ */
-const API_URL = "https://script.google.com/macros/s/AKfycbyIw9DuS_hXjQhQEsvGmBr5nNmyr99NaYoskYmq1PX9pyX0mrp8pRy1yqFoqrZ2SKZW/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby-TEnDihKGYft5p2BoOtY5aVrYGE5hpFKdjVfkbfSmbXy4xnl0Vo66TgJxgkRdjP2i/exec";
 const LOGIN_USER = "QVESTIDO";
 const LOGIN_PASS = "QVESTIDO1234";
 const CORREIOS = "https://rastreamento.correios.com.br/app/index.php?objetos=";
@@ -356,6 +356,8 @@ function parseDate(v){
   if(m){ let[_,d,mo,y]=m; if(y.length===2) y="20"+y; return `${y}-${pad(mo)}-${pad(d)}`; }
   m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
   if(m){ let[_,y,mo,d]=m; return `${y}-${pad(mo)}-${pad(d)}`; }
+  const d2 = new Date(s);                    // "Wed May 27 2026 00:00:00 GMT..."
+  if(!isNaN(d2)) return toISO(d2);
   return "";
 }
 const fmtDate = iso => { if(!iso) return ""; const[y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; };
@@ -956,7 +958,8 @@ function App(){
     if(!silent) setLoading(true);
     try{
       const j=await API.get();
-      setData(j.envios||[]); setCustom(j.statuses||[]); setOnline(true);
+      const limpos=(j.envios||[]).map(e=>({...e, faturamento: parseDate(e.faturamento)}));
+      setData(limpos); setCustom(j.statuses||[]); setOnline(true);
     }catch(e){
       setOnline(false);
       if(!silent) toast("Não consegui falar com a planilha. Confira a URL do Apps Script.","warn");
