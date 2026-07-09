@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QVestido · Rastreamento de Envios</title>
+<link rel="icon" href="https://recursos.qvestido.com.br/i/SVG-diversos/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.29.7/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+/* ================= TEMAS ================= */
+:root, [data-theme="claro"]{
+  --bg:#FBF9F7; --surface:#ffffff; --surface-2:#F6F1EE; --surface-3:#F0E9E4;
+  --ink:#2A2320; --ink-soft:#5A5049; --muted:#8A8078; --line:#ECE4DE; --line-strong:#DFD5CD;
+  --accent:#B45B78; --accent-ink:#8E3F59; --accent-soft:#F6E6EC; --on-accent:#fff;
+  --tone-mix:14%;
+  --shadow:0 1px 2px rgba(42,35,32,.04), 0 8px 24px -12px rgba(42,35,32,.16);
+  --radius:14px;
+}
+[data-theme="escuro"]{
+  --bg:#171311; --surface:#201B18; --surface-2:#292320; --surface-3:#322A26;
+  --ink:#F3ECE6; --ink-soft:#CDC2BA; --muted:#A2958C; --line:#332B26; --line-strong:#42372F;
+  --accent:#DB8CA3; --accent-ink:#EDAABC; --accent-soft:#3A2A30; --on-accent:#20181B;
+  --tone-mix:24%;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 30px -14px rgba(0,0,0,.6);
+}
+[data-theme="rosa"]{
+  --bg:#FFF5F8; --surface:#ffffff; --surface-2:#FDEBF1; --surface-3:#FADFE8;
+  --ink:#40232E; --ink-soft:#6E4B57; --muted:#A5808D; --line:#F7DFE7; --line-strong:#F0CBD8;
+  --accent:#E0698F; --accent-ink:#C24C73; --accent-soft:#FCE4EC; --on-accent:#fff;
+  --tone-mix:14%;
+  --shadow:0 1px 2px rgba(190,110,140,.06), 0 8px 24px -12px rgba(190,110,140,.28);
+  --radius:14px;
+}
+[data-theme="azul"]{
+  --bg:#F3F8FD; --surface:#ffffff; --surface-2:#E8F1FA; --surface-3:#DBE9F6;
+  --ink:#1E2E3D; --ink-soft:#465B70; --muted:#7A8FA3; --line:#DEEAF4; --line-strong:#C9DCEC;
+  --accent:#5B95CC; --accent-ink:#3F76AC; --accent-soft:#E2EFFA; --on-accent:#fff;
+  --tone-mix:14%;
+  --shadow:0 1px 2px rgba(60,110,160,.06), 0 8px 24px -12px rgba(60,110,160,.28);
+  --radius:14px;
+}
+[data-theme="verde"]{
+  --bg:#F4FAF6; --surface:#ffffff; --surface-2:#E9F4EC; --surface-3:#DDEDE2;
+  --ink:#1F332A; --ink-soft:#456055; --muted:#7B968A; --line:#DFEEE4; --line-strong:#C9E1D1;
+  --accent:#5AA37C; --accent-ink:#3F8461; --accent-soft:#E3F2E9; --on-accent:#fff;
+  --tone-mix:14%;
+  --shadow:0 1px 2px rgba(60,140,100,.06), 0 8px 24px -12px rgba(60,140,100,.28);
+  --radius:14px;
+}
+
+/* ================= BASE ================= */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; letter-spacing:-.01em;
+}
+button, input, select, textarea{font-family:inherit}
+button{cursor:pointer}
+::selection{background:var(--accent-soft)}
+.em{width:1em;height:1em;vertical-align:-.15em;display:inline-block;object-fit:contain}
+
+/* ================= TOPBAR ================= */
+.topbar{position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter:saturate(1.4) blur(12px); border-bottom:1px solid var(--line);}
+.topbar-inner{max-width:1240px; margin:0 auto; padding:12px 22px; display:flex; align-items:center; gap:18px;}
+.brand{display:flex; align-items:center; gap:12px; user-select:none}
+.brand img{height:24px; width:auto; display:block}
+.brand .sub{font-size:11.5px; color:var(--muted); letter-spacing:0; padding-left:12px; border-left:1px solid var(--line-strong)}
+.nav{display:flex; gap:2px; background:var(--surface-2); padding:4px; border-radius:12px}
+.nav button{border:0; background:transparent; color:var(--ink-soft); padding:7px 14px; border-radius:9px; font-size:13.5px; font-weight:500; transition:.15s; display:flex; align-items:center; gap:7px;}
+.nav button.active{background:var(--surface); color:var(--ink); box-shadow:var(--shadow)}
+.nav .dot{background:var(--accent); color:var(--on-accent); font-size:11px; font-weight:600; min-width:18px; height:18px; padding:0 5px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center}
+.spacer{flex:1}
+.icon-btn{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); width:38px; height:38px; border-radius:10px; display:grid; place-items:center; transition:.15s; position:relative}
+.icon-btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn{border:1px solid transparent; background:var(--accent); color:var(--on-accent); padding:9px 16px; border-radius:10px; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:8px; transition:.15s;}
+.btn:hover{background:var(--accent-ink)}
+.btn.ghost{background:var(--surface); color:var(--ink); border-color:var(--line-strong)}
+.btn.ghost:hover{border-color:var(--accent); color:var(--accent); background:var(--surface)}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+.btn.sm{padding:7px 12px; font-size:12.5px}
+.btn.danger{background:#C0553F; color:#fff} .btn.danger:hover{filter:brightness(.92); background:#C0553F}
+
+/* ================= LAYOUT ================= */
+.wrap{max-width:1240px; margin:0 auto; padding:24px 22px 90px}
+.view{animation:fade .25s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
+
+.cards{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; position:relative; overflow:hidden;}
+.card .n{font-size:26px; font-weight:700; line-height:1; letter-spacing:-.03em}
+.card .l{font-size:11.5px; color:var(--muted); margin-top:6px; text-transform:uppercase; letter-spacing:.05em; font-weight:600}
+.card .bar{position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--tone, var(--accent))}
+.card .n{color:var(--tone, var(--ink))}
+
+.toolbar{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin-bottom:18px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;}
+.field{display:flex; flex-direction:column; gap:5px}
+.field label{font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding-left:2px}
+.input{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); padding:8px 11px; border-radius:9px; font-size:13.5px; min-height:37px; transition:.15s; width:100%}
+.input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.input{min-height:90px; resize:vertical; line-height:1.5}
+.search{position:relative; flex:1; min-width:220px}
+.search .input{padding-left:34px}
+.search svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted)}
+.chips{display:flex; gap:6px; flex-wrap:wrap}
+.chip{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); padding:7px 12px; border-radius:20px; font-size:12.5px; font-weight:500; transition:.15s;}
+.chip:hover{border-color:var(--accent); color:var(--accent)}
+.chip.active{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
+.tb-sep{width:1px; align-self:stretch; background:var(--line); margin:2px 0}
+
+.date-group{margin-bottom:22px}
+.date-head{display:flex; align-items:center; gap:12px; padding:0 4px 10px;}
+.date-head h3{margin:0; font-weight:700; font-size:16px; letter-spacing:-.02em;}
+.date-head .count{font-size:12px; color:var(--muted); background:var(--surface-2); padding:3px 10px; border-radius:20px; font-weight:500}
+.date-head .rule{flex:1; height:1px; background:var(--line)}
+.table-shell{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+table{width:100%; border-collapse:collapse}
+thead th{text-align:left; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:700; padding:11px 14px; background:var(--surface-2); border-bottom:1px solid var(--line);}
+tbody td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+.nome{font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.pecas{font-size:11px; color:var(--muted); background:var(--surface-2); border:1px solid var(--line); padding:1px 7px; border-radius:20px; font-weight:500; white-space:nowrap}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; color:var(--ink-soft)}
+.code-cell{display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.code-cell .code{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; letter-spacing:.02em}
+.mini{border:1px solid var(--line-strong); background:var(--surface); color:var(--muted); width:27px; height:27px; border-radius:7px; display:grid; place-items:center; transition:.15s; flex:none;}
+.mini:hover{border-color:var(--accent); color:var(--accent)}
+.mini.on{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.row-actions{display:flex; gap:6px; justify-content:flex-end}
+.obs-line{font-size:12px; color:var(--muted); margin-top:3px; display:flex; gap:5px; align-items:flex-start; max-width:340px}
+
+/* status badge / select */
+.badge{
+  display:inline-flex; align-items:center; gap:6px; border:1px solid transparent; border-radius:20px;
+  padding:6px 12px; font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:.15s;
+  background:color-mix(in srgb, var(--tone) var(--tone-mix), var(--surface));
+  color:var(--tone);
+}
+.badge:hover{filter:brightness(.97)}
+.badge .caret{opacity:.6}
+.badge-select{
+  appearance:none; border:1px solid transparent; border-radius:20px; padding:9px 30px 9px 14px;
+  font-size:13px; font-weight:600; cursor:pointer; align-self:flex-start;
+  background-color:color-mix(in srgb, var(--tone) var(--tone-mix), var(--surface));
+  color:var(--tone);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat; background-position:right 11px center;
+}
+.badge-select:focus{outline:none; box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* ================= EMPTY / PANELS ================= */
+.empty{text-align:center; padding:70px 24px; background:var(--surface); border:1px dashed var(--line-strong); border-radius:var(--radius);}
+.empty .ico{font-size:34px; margin-bottom:8px}
+.empty .ico .em{width:38px;height:38px}
+.empty h3{font-weight:700; margin:0 0 6px; font-size:18px; letter-spacing:-.02em}
+.empty p{color:var(--muted); margin:0 0 18px; max-width:420px; margin-inline:auto}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:22px; margin-bottom:18px}
+.panel h2{font-weight:700; font-size:18px; margin:0 0 4px; letter-spacing:-.02em}
+.panel .desc{color:var(--muted); margin:0 0 18px; font-size:13px}
+.drop{border:2px dashed var(--line-strong); border-radius:var(--radius); padding:40px 24px; text-align:center; transition:.18s; cursor:pointer; background:var(--surface-2);}
+.drop:hover,.drop.over{border-color:var(--accent); background:var(--accent-soft)}
+.drop .ico .em{width:34px;height:34px;margin-bottom:8px}
+.drop h3{margin:0 0 4px; font-size:15px; font-weight:600}
+.drop p{margin:0; color:var(--muted); font-size:12.5px}
+.cols-detected{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 4px}
+.col-tag{font-size:12px; font-weight:500; padding:5px 11px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; border:1px solid transparent}
+.col-tag.ok{background:color-mix(in srgb,#3F8768 14%,var(--surface)); color:#3F8768}
+.col-tag.miss{background:color-mix(in srgb,#C0553F 14%,var(--surface)); color:#C0553F}
+.summary{display:flex; gap:22px; flex-wrap:wrap; margin:14px 0; padding:16px; background:var(--surface-2); border-radius:12px}
+.summary .s .n{font-size:24px; font-weight:700; line-height:1; letter-spacing:-.03em}
+.summary .s .l{font-size:11.5px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; font-weight:600}
+.radio-row{display:flex; gap:10px; margin:6px 0; flex-wrap:wrap}
+.radio-card{flex:1; min-width:230px; border:1px solid var(--line-strong); border-radius:11px; padding:13px 15px; cursor:pointer; transition:.15s; display:flex; gap:11px; align-items:flex-start;}
+.radio-card:hover{border-color:var(--accent)}
+.radio-card.sel{border-color:var(--accent); background:var(--accent-soft)}
+.radio-card input{margin-top:3px; accent-color:var(--accent)}
+.radio-card .t{font-weight:600; font-size:13.5px}
+.radio-card .d{font-size:12px; color:var(--muted); margin-top:2px}
+.danger-zone{border:1px solid #C0553F; background:color-mix(in srgb,#C0553F 10%,var(--surface)); border-radius:11px; padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.danger-zone .t{font-weight:600; font-size:13.5px; color:#C0553F}
+.danger-zone .d{font-size:12px; color:var(--ink-soft)}
+
+/* ================= MODAIS ================= */
+.overlay{position:fixed; inset:0; z-index:80; background:rgba(20,14,12,.42); backdrop-filter:blur(3px); display:grid; place-items:center; padding:18px; animation:fade .18s ease}
+.modal{background:var(--surface); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); width:100%; max-width:560px; max-height:88vh; overflow:auto; animation:pop .2s cubic-bezier(.2,.8,.3,1)}
+@keyframes pop{from{opacity:0; transform:scale(.96) translateY(8px)}to{opacity:1; transform:none}}
+.modal-head{display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--surface); z-index:2}
+.modal-head h3{margin:0; font-size:16.5px; font-weight:700; letter-spacing:-.02em; flex:1}
+.modal-body{padding:20px}
+.modal-foot{display:flex; gap:10px; justify-content:flex-end; padding:16px 20px; border-top:1px solid var(--line); position:sticky; bottom:0; background:var(--surface); flex-wrap:wrap}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.fg{display:flex; flex-direction:column; gap:6px; margin-bottom:14px}
+.fg label{font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em}
+.hint{font-size:12px; color:var(--muted); margin-top:4px}
+
+.status-list{display:flex; flex-direction:column; gap:4px; max-height:340px; overflow:auto; margin:-4px}
+.status-opt{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; border:1px solid transparent; background:transparent; text-align:left; width:100%; transition:.12s; font-size:13.5px; font-weight:500; color:var(--ink)}
+.status-opt:hover{background:var(--surface-2)}
+.status-opt.sel{border-color:var(--accent); background:var(--accent-soft)}
+.status-opt .swatch{width:10px; height:10px; border-radius:50%; background:var(--tone); flex:none}
+.status-opt .custom-tag{margin-left:auto; font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em}
+.status-opt .del{margin-left:auto; opacity:0; color:var(--muted)}
+.status-opt:hover .del{opacity:1}
+
+.theme-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px}
+.theme-card{border:1px solid var(--line-strong); border-radius:12px; padding:12px; background:var(--surface); display:flex; flex-direction:column; gap:9px; transition:.15s; text-align:left}
+.theme-card:hover{border-color:var(--accent)}
+.theme-card.sel{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.theme-card .swatches{display:flex; gap:4px}
+.theme-card .sw{width:22px; height:22px; border-radius:6px; border:1px solid rgba(0,0,0,.08)}
+.theme-card .tname{font-size:13px; font-weight:600}
+
+/* ================= LOGIN ================= */
+.login-wrap{min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(1200px 600px at 50% -10%, var(--accent-soft), var(--bg) 60%)}
+.login-card{background:var(--surface); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow); padding:34px; width:100%; max-width:390px; text-align:center}
+.login-card img.logo{height:30px; margin-bottom:6px}
+.login-card h1{font-size:18px; font-weight:700; margin:14px 0 4px; letter-spacing:-.02em}
+.login-card p{color:var(--muted); font-size:13px; margin:0 0 22px}
+.login-card .fg{text-align:left}
+.login-card .btn{width:100%; justify-content:center; margin-top:6px}
+.login-err{background:color-mix(in srgb,#C0553F 12%,var(--surface)); color:#C0553F; border-radius:10px; padding:9px 12px; font-size:12.5px; font-weight:500; margin-bottom:12px}
+
+/* ================= MISC ================= */
+.toast-wrap{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); z-index:100; display:flex; flex-direction:column; gap:8px; align-items:center}
+.toast{background:var(--ink); color:var(--bg); padding:11px 18px; border-radius:12px; font-size:13px; font-weight:500; box-shadow:var(--shadow); display:flex; align-items:center; gap:9px; animation:toastin .25s ease;}
+.toast.good{background:#3F8768; color:#fff}
+.toast.warn{background:#C0553F; color:#fff}
+@keyframes toastin{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+
+.boot{display:grid; place-items:center; min-height:70vh; color:var(--muted); font-size:14px; gap:14px}
+.spin{width:26px;height:26px;border:3px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sync{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted)}
+.sync .pip{width:7px;height:7px;border-radius:50%;background:#3F8768}
+.sync.off .pip{background:#C0553F}
+.sync.busy .pip{background:#C99A3F; animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+
+@media (max-width:900px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .nav .lbl{display:none}
+  .brand .sub{display:none}
+  .topbar-inner{gap:10px; padding:10px 14px}
+  .wrap{padding:18px 14px 70px}
+  .sync .lbl{display:none}
+  thead{display:none}
+  table,tbody,tr,td{display:block; width:100%}
+  tbody tr{padding:10px 4px; border-bottom:1px solid var(--line)}
+  tbody tr:hover{background:transparent}
+  tbody td{border:0; padding:5px 12px; display:flex; justify-content:space-between; gap:14px; align-items:center}
+  tbody td::before{content:attr(data-l); font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700}
+  .obs-line{max-width:none}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="root"><div class="boot"><div class="spin"></div><div>Carregando…</div></div></div>
+
+<script type="text/babel" data-presets="react">
+const {useState, useEffect, useMemo, useRef, useCallback} = React;
+
+/* ============================================================
+   ⚙️  CONFIGURAÇÃO — só mexa aqui
+   ============================================================ */
+const API_URL = "https://script.google.com/macros/s/AKfycbyIw9DuS_hXjQhQEsvGmBr5nNmyr99NaYoskYmq1PX9pyX0mrp8pRy1yqFoqrZ2SKZW/exec";
+const LOGIN_USER = "QVESTIDO";
+const LOGIN_PASS = "QVESTIDO1234";
+const CORREIOS = "https://rastreamento.correios.com.br/app/index.php?objetos=";
+const LOGO = "https://recursos.qvestido.com.br/i/SVG-diversos/logo.svg";
+/* ============================================================ */
+
+/* ---------- Emojis iOS (via emoji-datasource-apple) ---------- */
+const EMOJI_CDN = "https://cdn.jsdelivr.net/npm/emoji-datasource-apple@15.1.2/img/apple/64/";
+const EMOJI = {
+  "📦":"1f4e6","📭":"1f4ed","🔍":"1f50d","✅":"2705","🚚":"1f69a","🏷️":"1f3f7-fe0f",
+  "🔗":"1f517","📝":"1f4dd","🗑️":"1f5d1-fe0f","🔒":"1f512","🎨":"1f3a8","☁️":"2601-fe0f",
+  "🏠":"1f3e0","🛵":"1f6f5","↩️":"21a9-fe0f","⏳":"23f3","❌":"274c","📮":"1f4ee","📍":"1f4cd",
+  "✏️":"270f-fe0f","⚠️":"26a0-fe0f","🎉":"1f389","📤":"1f4e4","📥":"1f4e5","👋":"1f44b",
+  "🕐":"1f550","🚪":"1f6aa","➕":"2795","💬":"1f4ac","👗":"1f457"
+};
+const Em = ({c, size}) => {
+  const code = EMOJI[c];
+  const st = size ? {width:size, height:size} : null;
+  return code
+    ? <img className="em" src={EMOJI_CDN + code + ".png"} alt={c} style={st} draggable="false"/>
+    : <span>{c}</span>;
+};
+
+/* ---------- Storage local (tema + sessão) ---------- */
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null ? d : v; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+/* ---------- Temas ---------- */
+const THEMES = [
+  {id:"claro",  nome:"Claro",       sw:["#FBF9F7","#B45B78","#2A2320"]},
+  {id:"escuro", nome:"Escuro",      sw:["#171311","#DB8CA3","#F3ECE6"]},
+  {id:"rosa",   nome:"Rosa bebê",   sw:["#FFF5F8","#E0698F","#40232E"]},
+  {id:"azul",   nome:"Azul bebê",   sw:["#F3F8FD","#5B95CC","#1E2E3D"]},
+  {id:"verde",  nome:"Verde pastel",sw:["#F4FAF6","#5AA37C","#1F332A"]},
+];
+
+/* ---------- Status ---------- */
+const STATUS_BASE = [
+  {nome:"Aguardando",                        cor:"#9A9089"},
+  {nome:"Etiqueta emitida",                  cor:"#8A7FBF"},
+  {nome:"Postado",                           cor:"#5B8DD6"},
+  {nome:"Em trânsito",                       cor:"#6C6AB8"},
+  {nome:"Parado no CDD",                     cor:"#A0703F"},
+  {nome:"Correção de rota",                  cor:"#7A8CA6"},
+  {nome:"Saiu para entrega",                 cor:"#C96C8A"},
+  {nome:"Tentativa de entrega não efetuada", cor:"#C0553F"},
+  {nome:"Carteiro não atendido",             cor:"#C46A50"},
+  {nome:"Aguardando retirada",               cor:"#C99A3F"},
+  {nome:"Entregue",                          cor:"#3F8768"},
+  {nome:"Retira na loja",                    cor:"#3F9A96"},
+  {nome:"Motoboy",                           cor:"#D08442"},
+  {nome:"Enviado junto",                     cor:"#7E9A3F"},
+  {nome:"Suspendida",                        cor:"#8A8078"},
+  {nome:"Retornou para o remetente",         cor:"#B0483F"},
+  {nome:"Em atraso",                         cor:"#C9483F"},
+];
+const PALETA = ["#B45B78","#5B8DD6","#6C6AB8","#3F8768","#C99A3F","#C0553F","#3F9A96","#D08442","#7E9A3F","#8A7FBF","#8A8078","#7A8CA6"];
+const FINALIZADOS = ["Entregue","Retira na loja"];
+const EM_ROTA = ["Postado","Em trânsito","Saiu para entrega","Etiqueta emitida","Parado no CDD","Correção de rota","Motoboy","Enviado junto","Aguardando retirada"];
+const PROBLEMAS = ["Tentativa de entrega não efetuada","Carteiro não atendido","Suspendida","Retornou para o remetente","Em atraso"];
+
+/* ---------- Helpers ---------- */
+const pad = n => String(n).padStart(2,"0");
+const norm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const trackUrl = c => CORREIOS + encodeURIComponent(String(c||"").trim());
+
+function parseDate(v){
+  if(v==null||v==="") return "";
+  if(v instanceof Date && !isNaN(v)) return toISO(v);
+  if(typeof v==="number" && isFinite(v)){ const d=new Date(Math.round((v-25569)*86400000)); if(!isNaN(d)) return toISO(d); }
+  const s=String(v).trim();
+  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){ let[_,d,mo,y]=m; if(y.length===2) y="20"+y; return `${y}-${pad(mo)}-${pad(d)}`; }
+  m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if(m){ let[_,y,mo,d]=m; return `${y}-${pad(mo)}-${pad(d)}`; }
+  return "";
+}
+const fmtDate = iso => { if(!iso) return ""; const[y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; };
+function fmtDateLong(iso){
+  if(!iso) return "Sem data de faturamento";
+  const[y,m,d]=iso.split("-");
+  const meses=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  return `${d} de ${meses[+m-1]}. de ${y}`;
+}
+function fmtCPF(v){
+  const d=String(v||"").replace(/\D/g,"");
+  if(d.length===11) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+  if(d.length===14) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`;
+  return String(v||"");
+}
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch(e){
+    try{
+      const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity=0;
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); return true;
+    }catch(e2){ return false; }
+  }
+}
+
+/* ---------- API (Google Sheets via Apps Script) ---------- */
+const API = {
+  async get(){
+    const r = await fetch(API_URL + "?action=list&t=" + Date.now());
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error||"Erro ao ler a planilha");
+    return j;
+  },
+  async post(body){
+    const r = await fetch(API_URL, {
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"}, // evita preflight CORS
+      body: JSON.stringify(body)
+    });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error||"Erro ao gravar na planilha");
+    return j;
+  }
+};
+
+/* ---------- Importação ---------- */
+const FIELDS=[
+  {key:"pedido",     label:"Número do Pedido",   aliases:["numero do pedido","n do pedido","pedido","numero pedido"]},
+  {key:"nome",       label:"Nome do contato",    aliases:["nome do contato","nome contato","nome do cliente","cliente","contato","nome"]},
+  {key:"rastreio",   label:"Cód. Rastreamento",  aliases:["cod rastreamento","codigo de rastreamento","codigo rastreamento","rastreamento","rastreio"]},
+  {key:"faturamento",label:"Data de Faturamento",aliases:["data de faturamento","data faturamento","faturamento"]},
+  {key:"cpf",        label:"CPF/CNPJ",           aliases:["cpf cnpj","cpf","cnpj","documento"]},
+];
+function resolveCols(headers){
+  const res={}, used=new Set();
+  FIELDS.forEach(f=>{
+    let hit=headers.find(h=>!used.has(h)&&norm(h)===norm(f.label));
+    if(!hit) hit=headers.find(h=>!used.has(h)&&f.aliases.includes(norm(h)));
+    if(hit){ used.add(hit); res[f.key]=hit; }
+  });
+  return res;
+}
+function rowsToEnvios(rows, cols){
+  const map=new Map();
+  rows.forEach(r=>{
+    const ped=cols.pedido?String(r[cols.pedido]??"").trim():"";
+    const key=ped || ("__"+map.size);
+    const ras=cols.rastreio?String(r[cols.rastreio]??"").trim():"";
+    const fat=cols.faturamento?parseDate(r[cols.faturamento]):"";
+    if(!map.has(key)){
+      map.set(key,{ pedido:ped,
+        nome:cols.nome?String(r[cols.nome]??"").trim():"",
+        cpf:cols.cpf?String(r[cols.cpf]??"").trim():"",
+        rastreio:ras, faturamento:fat, itens:1 });
+    }else{
+      const g=map.get(key); g.itens++;
+      if(!g.rastreio&&ras) g.rastreio=ras;
+      if(!g.faturamento&&fat) g.faturamento=fat;
+    }
+  });
+  return [...map.values()].map(e=>({ ...e, id:uid(), obs:"",
+    status: e.rastreio?"Postado":"Aguardando", statusManual:false }));
+}
+function mergeEnvios(current, incoming, mode){
+  if(mode==="replace") return { data:incoming, added:incoming.length, updated:0 };
+  const data=current.map(e=>({...e}));
+  const byPed=new Map(data.filter(e=>e.pedido).map(e=>[e.pedido,e]));
+  let added=0, updated=0;
+  incoming.forEach(inc=>{
+    const ex=inc.pedido?byPed.get(inc.pedido):null;
+    if(ex){
+      let ch=false;
+      if(inc.rastreio && inc.rastreio!==ex.rastreio){ ex.rastreio=inc.rastreio; ch=true; }
+      if(inc.faturamento && !ex.faturamento){ ex.faturamento=inc.faturamento; ch=true; }
+      if(inc.itens>ex.itens) ex.itens=inc.itens;
+      if(!ex.statusManual && ex.rastreio && ex.status==="Aguardando"){ ex.status="Postado"; ch=true; }
+      if(ch) updated++;
+    }else{
+      data.push(inc); if(inc.pedido) byPed.set(inc.pedido,inc); added++;
+    }
+  });
+  return { data, added, updated };
+}
+function guessDelimiter(text){
+  const line=(text.split(/\r?\n/)[0]||"");
+  const c={";":0,",":0,"\t":0};
+  for(const ch of line) if(ch in c) c[ch]++;
+  return Object.keys(c).sort((a,b)=>c[b]-c[a])[0]||",";
+}
+
+/* ---------- Ícones ---------- */
+const I={
+  menu:<path d="M3 6h18M3 12h18M3 18h18"/>,
+  import:<g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></g>,
+  export:<g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></g>,
+  search:<g><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></g>,
+  copy:<g><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></g>,
+  ext:<g><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></g>,
+  share:<g><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></g>,
+  trash:<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>,
+  edit:<g><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></g>,
+  note:<g><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></g>,
+  check:<path d="M20 6L9 17l-5-5"/>,
+  x:<path d="M18 6L6 18M6 6l12 12"/>,
+  caret:<path d="M6 9l6 6 6-6"/>,
+  palette:<g><circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="16" cy="11" r="1"/></g>,
+  refresh:<g><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></g>,
+  logout:<g><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></g>,
+  plus:<path d="M12 5v14M5 12h14"/>,
+};
+const Ic=({d,size=16,sw=2})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function Login({onOk, theme, setTheme}){
+  const [u,setU]=useState(""); const [p,setP]=useState(""); const [err,setErr]=useState("");
+  const submit=()=>{
+    if(u.trim().toUpperCase()===LOGIN_USER && p===LOGIN_PASS){ onOk(); }
+    else setErr("Usuário ou senha incorretos.");
+  };
+  return (<div className="login-wrap">
+    <div className="login-card">
+      <img className="logo" src={LOGO} alt="QVestido"/>
+      <h1>Rastreamento de Envios</h1>
+      <p>Entre para acessar os envios da loja.</p>
+      {err && <div className="login-err"><Em c="⚠️"/> {err}</div>}
+      <div className="fg">
+        <label>Usuário</label>
+        <input className="input" value={u} autoFocus autoCapitalize="characters"
+          onChange={e=>{setU(e.target.value); setErr("");}}
+          onKeyDown={e=>e.key==="Enter"&&submit()}/>
+      </div>
+      <div className="fg">
+        <label>Senha</label>
+        <input className="input" type="password" value={p}
+          onChange={e=>{setP(e.target.value); setErr("");}}
+          onKeyDown={e=>e.key==="Enter"&&submit()}/>
+      </div>
+      <button className="btn" onClick={submit}><Em c="🔒"/> Entrar</button>
+      <div style={{marginTop:20, display:"flex", gap:6, justifyContent:"center", flexWrap:"wrap"}}>
+        {THEMES.map(t=>(
+          <button key={t.id} title={t.nome} onClick={()=>setTheme(t.id)}
+            style={{width:24,height:24,borderRadius:8,border: theme===t.id?"2px solid var(--accent)":"1px solid var(--line-strong)",
+              background:`linear-gradient(135deg, ${t.sw[0]} 50%, ${t.sw[1]} 50%)`, cursor:"pointer"}}/>
+        ))}
+      </div>
+    </div>
+  </div>);
+}
+
+/* ============================================================
+   MODAIS
+   ============================================================ */
+function Modal({title, icon, onClose, children, foot, wide}){
+  useEffect(()=>{
+    const h=e=>e.key==="Escape"&&onClose();
+    window.addEventListener("keydown",h); return ()=>window.removeEventListener("keydown",h);
+  },[onClose]);
+  return (<div className="overlay" onMouseDown={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal" style={wide?{maxWidth:680}:null}>
+      <div className="modal-head">
+        {icon && <Em c={icon} size={20}/>}
+        <h3>{title}</h3>
+        <button className="mini" onClick={onClose}><Ic d={I.x} size={14}/></button>
+      </div>
+      <div className="modal-body">{children}</div>
+      {foot && <div className="modal-foot">{foot}</div>}
+    </div>
+  </div>);
+}
+
+function EditModal({envio, statuses, onSave, onClose}){
+  const [f,setF]=useState({...envio});
+  const set=(k,v)=>setF(x=>({...x,[k]:v}));
+  const cor=(statuses.find(s=>s.nome===f.status)||{cor:"#8A8078"}).cor;
+  return (<Modal title="Editar envio" icon="✏️" onClose={onClose}
+    foot={<React.Fragment>
+      <button className="btn ghost" onClick={onClose}>Cancelar</button>
+      <button className="btn" onClick={()=>onSave({...f, statusManual: f.status!==envio.status ? true : envio.statusManual})}>
+        <Ic d={I.check} size={15}/> Salvar
+      </button>
+    </React.Fragment>}>
+    <div className="grid2">
+      <div className="fg"><label>Nome do contato</label>
+        <input className="input" value={f.nome} onChange={e=>set("nome",e.target.value)}/></div>
+      <div className="fg"><label>Número do pedido</label>
+        <input className="input" value={f.pedido} onChange={e=>set("pedido",e.target.value)}/></div>
+    </div>
+    <div className="grid2">
+      <div className="fg"><label>CPF / CNPJ</label>
+        <input className="input" value={f.cpf} onChange={e=>set("cpf",e.target.value)}/></div>
+      <div className="fg"><label>Data de faturamento</label>
+        <input type="date" className="input" value={f.faturamento} onChange={e=>set("faturamento",e.target.value)}/></div>
+    </div>
+    <div className="grid2">
+      <div className="fg"><label>Código de rastreamento</label>
+        <input className="input mono" value={f.rastreio} placeholder="AA123456789BR"
+          onChange={e=>set("rastreio", e.target.value.toUpperCase().replace(/\s/g,""))}/>
+        <div className="hint">Mudou o código? É só colar o novo aqui.</div>
+      </div>
+      <div className="fg"><label>Peças no pedido</label>
+        <input type="number" min="1" className="input" value={f.itens} onChange={e=>set("itens", Math.max(1, +e.target.value||1))}/></div>
+    </div>
+    <div className="fg"><label>Status</label>
+      <select className="badge-select" style={{"--tone":cor}} value={f.status} onChange={e=>set("status",e.target.value)}>
+        {statuses.map(s=><option key={s.nome} value={s.nome}>{s.nome}</option>)}
+      </select>
+      <div className="hint">Para criar um status novo, use o botão de status direto na lista de envios.</div>
+    </div>
+    <div className="fg" style={{marginBottom:0}}><label>Observações do rastreamento</label>
+      <textarea className="input" value={f.obs||""} placeholder="Ex.: cliente pediu pra entregar depois das 14h · objeto parado no CDD Petrolina desde 03/07"
+        onChange={e=>set("obs",e.target.value)}/></div>
+  </Modal>);
+}
+
+function ObsModal({envio, onSave, onClose}){
+  const [txt,setTxt]=useState(envio.obs||"");
+  return (<Modal title="Observações" icon="📝" onClose={onClose}
+    foot={<React.Fragment>
+      <button className="btn ghost" onClick={onClose}>Cancelar</button>
+      <button className="btn" onClick={()=>onSave({...envio, obs:txt})}><Ic d={I.check} size={15}/> Salvar</button>
+    </React.Fragment>}>
+    <div style={{marginBottom:14, fontSize:13, color:"var(--muted)"}}>
+      <b style={{color:"var(--ink)"}}>{envio.nome||"Sem nome"}</b>
+      {envio.pedido && <span> · pedido {envio.pedido}</span>}
+      {envio.rastreio && <span> · <span className="mono">{envio.rastreio}</span></span>}
+    </div>
+    <textarea className="input" autoFocus value={txt} style={{minHeight:150}}
+      placeholder="Anote aqui o que estiver acontecendo com esse envio…"
+      onChange={e=>setTxt(e.target.value)}/>
+  </Modal>);
+}
+
+function StatusModal({statuses, atual, onPick, onAdd, onDelete, onClose}){
+  const [novo,setNovo]=useState(""); const [cor,setCor]=useState(PALETA[0]);
+  const [addOpen,setAddOpen]=useState(false);
+  const base=STATUS_BASE.map(s=>s.nome);
+  return (<Modal title="Escolher status" icon="🏷️" onClose={onClose}>
+    <div className="status-list">
+      {statuses.map(s=>(
+        <div key={s.nome} style={{display:"flex", alignItems:"center", gap:4}}>
+          <button className={"status-opt"+(atual===s.nome?" sel":"")} style={{"--tone":s.cor}}
+            onClick={()=>{ onPick(s.nome); onClose(); }}>
+            <span className="swatch"></span>{s.nome}
+            {base.indexOf(s.nome)<0 && <span className="custom-tag">custom</span>}
+          </button>
+          {base.indexOf(s.nome)<0 &&
+            <button className="mini" title="Apagar status" onClick={()=>onDelete(s.nome)}><Ic d={I.trash} size={13}/></button>}
+        </div>
+      ))}
+    </div>
+
+    <div style={{marginTop:18, paddingTop:16, borderTop:"1px solid var(--line)"}}>
+      {!addOpen ? (
+        <button className="btn ghost sm" onClick={()=>setAddOpen(true)}><Ic d={I.plus} size={14}/> Criar novo status</button>
+      ) : (
+        <div>
+          <div className="fg"><label>Nome do novo status</label>
+            <input className="input" autoFocus value={novo} placeholder="Ex.: Extraviado"
+              onChange={e=>setNovo(e.target.value)} onKeyDown={e=>e.key==="Enter"&&novo.trim()&&(onAdd(novo.trim(),cor),setNovo(""),setAddOpen(false))}/></div>
+          <div className="fg"><label>Cor</label>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {PALETA.map(c=>(
+                <button key={c} onClick={()=>setCor(c)} style={{width:26,height:26,borderRadius:8,background:c,
+                  border: cor===c?"2px solid var(--ink)":"1px solid var(--line-strong)", cursor:"pointer"}}/>
+              ))}
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn sm" disabled={!novo.trim()} onClick={()=>{ onAdd(novo.trim(),cor); setNovo(""); setAddOpen(false); }}>Adicionar</button>
+            <button className="btn ghost sm" onClick={()=>setAddOpen(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+    </div>
+  </Modal>);
+}
+
+function ThemeModal({theme,setTheme,onClose}){
+  return (<Modal title="Tema do sistema" icon="🎨" onClose={onClose}>
+    <div className="theme-grid">
+      {THEMES.map(t=>(
+        <button key={t.id} className={"theme-card"+(theme===t.id?" sel":"")} onClick={()=>setTheme(t.id)}>
+          <div className="swatches">{t.sw.map((c,i)=><span key={i} className="sw" style={{background:c}}/>)}</div>
+          <div className="tname">{t.nome}</div>
+        </button>
+      ))}
+    </div>
+    <div className="hint" style={{marginTop:14}}>A escolha fica salva neste navegador.</div>
+  </Modal>);
+}
+
+/* ============================================================
+   LISTA
+   ============================================================ */
+function StatusBadge({value, statuses, onClick}){
+  const s = statuses.find(x=>x.nome===value) || {cor:"#8A8078"};
+  return (<button className="badge" style={{"--tone":s.cor}} onClick={onClick}>
+    {value} <Ic className="caret" d={I.caret} size={12} sw={2.5}/>
+  </button>);
+}
+
+function EnvioRow({e, statuses, onStatus, onRemove, onCopy, onShare, onEdit, onObs}){
+  return (<tr>
+    <td data-l="Cliente">
+      <div>
+        <div className="nome">
+          <span>{e.nome || <span style={{color:"var(--muted)"}}>—</span>}</span>
+          {e.itens>1 && <span className="pecas">{e.itens} peças</span>}
+        </div>
+        {e.obs && <div className="obs-line"><Em c="💬"/><span>{e.obs}</span></div>}
+      </div>
+    </td>
+    <td data-l="Pedido"><span className="mono">{e.pedido||"—"}</span></td>
+    <td data-l="CPF/CNPJ"><span className="mono">{fmtCPF(e.cpf)||"—"}</span></td>
+    <td data-l="Rastreio">
+      {e.rastreio ? (
+        <div className="code-cell">
+          <span className="code">{e.rastreio}</span>
+          <button className="mini" title="Copiar código" onClick={()=>onCopy(e.rastreio)}><Ic d={I.copy} size={14}/></button>
+          <button className="mini" title="Compartilhar link dos Correios" onClick={()=>onShare(e)}><Ic d={I.share} size={14}/></button>
+          <a className="mini" title="Rastrear nos Correios" href={trackUrl(e.rastreio)} target="_blank" rel="noopener"><Ic d={I.ext} size={14}/></a>
+        </div>
+      ) : <span className="mono" style={{color:"var(--muted)"}}>sem rastreio</span>}
+    </td>
+    <td data-l="Status"><StatusBadge value={e.status} statuses={statuses} onClick={()=>onStatus(e)}/></td>
+    <td data-l="Ações"><div className="row-actions">
+      <button className={"mini"+(e.obs?" on":"")} title="Observações" onClick={()=>onObs(e)}><Ic d={I.note} size={14}/></button>
+      <button className="mini" title="Editar" onClick={()=>onEdit(e)}><Ic d={I.edit} size={14}/></button>
+      <button className="mini" title="Apagar" onClick={()=>onRemove(e)}><Ic d={I.trash} size={14}/></button>
+    </div></td>
+  </tr>);
+}
+
+function DateGroup({iso, rows, ...h}){
+  return (<div className="date-group">
+    <div className="date-head">
+      <h3>{fmtDateLong(iso)}</h3>
+      <span className="count">{rows.length} envio{rows.length>1?"s":""}</span>
+      <span className="rule"></span>
+    </div>
+    <div className="table-shell"><table>
+      <thead><tr>
+        <th>Cliente</th><th>Pedido</th><th>CPF/CNPJ</th><th>Código de rastreamento</th><th>Status</th><th style={{textAlign:"right"}}>Ações</th>
+      </tr></thead>
+      <tbody>{rows.map(e=><EnvioRow key={e.id} e={e} {...h}/>)}</tbody>
+    </table></div>
+  </div>);
+}
+
+function Cards({rows}){
+  const c = v => rows.filter(r=>v.indexOf(r.status)>=0).length;
+  const items=[
+    {n:rows.length, l:"Envios", tone:"var(--accent)"},
+    {n:c(FINALIZADOS), l:"Entregues", tone:"#3F8768"},
+    {n:c(EM_ROTA), l:"Em rota", tone:"#6C6AB8"},
+    {n:c(PROBLEMAS), l:"Problemas", tone:"#C0553F"},
+    {n:rows.filter(r=>r.status==="Aguardando").length, l:"Aguardando", tone:"#9A9089"},
+  ];
+  return (<div className="cards">{items.map((x,i)=>(
+    <div key={i} className="card" style={{"--tone":x.tone}}><div className="bar"></div>
+      <div className="n">{x.n}</div><div className="l">{x.l}</div></div>
+  ))}</div>);
+}
+
+function EnviosView({data, statuses, filters, setFilters, goImport, ...h}){
+  const rows=useMemo(()=>{
+    const q=norm(filters.q);
+    return data.filter(r=>{
+      if(filters.status && r.status!==filters.status) return false;
+      if(filters.from && (!r.faturamento || r.faturamento<filters.from)) return false;
+      if(filters.to && (!r.faturamento || r.faturamento>filters.to)) return false;
+      if(q){ const hay=norm([r.nome,r.cpf,r.pedido,r.rastreio,r.obs].join(" ")); if(!hay.includes(q)) return false; }
+      return true;
+    });
+  },[data,filters]);
+
+  const groups=useMemo(()=>{
+    const g={};
+    rows.forEach(r=>{ const k=r.faturamento||"__none__"; (g[k]=g[k]||[]).push(r); });
+    const keys=Object.keys(g).sort((a,b)=> a==="__none__"?1 : b==="__none__"?-1 : b.localeCompare(a));
+    return keys.map(k=>({iso:k==="__none__"?"":k, rows:g[k]}));
+  },[rows]);
+
+  const preset=r=>{
+    const now=new Date(); let from="",to="";
+    if(r==="today"){ from=toISO(now); to=from; }
+    else if(r==="7"){ const p=new Date(now); p.setDate(p.getDate()-6); from=toISO(p); to=toISO(now); }
+    else if(r==="month"){ from=toISO(new Date(now.getFullYear(),now.getMonth(),1)); to=toISO(now); }
+    setFilters(f=>({...f,range:r,from,to}));
+  };
+
+  return (<div className="view">
+    <Cards rows={rows}/>
+    <div className="toolbar">
+      <div className="search">
+        <Ic d={I.search} size={16}/>
+        <input className="input" placeholder="Buscar por nome, CPF, pedido, código ou observação…" value={filters.q}
+          onChange={e=>setFilters(f=>({...f,q:e.target.value}))}/>
+      </div>
+      <div className="tb-sep"></div>
+      <div className="field"><label>Faturamento de</label>
+        <input type="date" className="input" value={filters.from} onChange={e=>setFilters(f=>({...f,from:e.target.value,range:""}))}/></div>
+      <div className="field"><label>até</label>
+        <input type="date" className="input" value={filters.to} onChange={e=>setFilters(f=>({...f,to:e.target.value,range:""}))}/></div>
+      <div className="field"><label>Status</label>
+        <select className="input" value={filters.status} onChange={e=>setFilters(f=>({...f,status:e.target.value}))}>
+          <option value="">Todos os status</option>
+          {statuses.map(s=><option key={s.nome} value={s.nome}>{s.nome}</option>)}
+        </select></div>
+      <div className="field">
+        <div className="chips">
+          {[["today","Hoje"],["7","7 dias"],["month","Este mês"],["all","Tudo"]].map(([r,l])=>(
+            <button key={r} className={"chip"+(filters.range===r?" active":"")}
+              onClick={()=>r==="all"?setFilters(f=>({...f,range:"all",from:"",to:""})):preset(r)}>{l}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {data.length===0 ? (
+      <div className="empty"><div className="ico"><Em c="📭"/></div><h3>Nenhum envio ainda</h3>
+        <p>Importe o CSV de vendas do Eccosys para organizar os rastreios por data de faturamento.</p>
+        <button className="btn" onClick={goImport}><Em c="📥"/> Importar planilha</button></div>
+    ) : rows.length===0 ? (
+      <div className="empty"><div className="ico"><Em c="🔍"/></div><h3>Nada por aqui</h3>
+        <p>Nenhum envio bate com os filtros atuais. Tente limpar a busca ou ampliar o período.</p>
+        <button className="btn ghost" onClick={()=>setFilters({q:"",from:"",to:"",status:"",range:"all"})}>Limpar filtros</button></div>
+    ) : groups.map(g=><DateGroup key={g.iso||"none"} iso={g.iso} rows={g.rows} statuses={statuses} {...h}/>)}
+  </div>);
+}
+
+/* ============================================================
+   IMPORTAR
+   ============================================================ */
+function ImportView({data,onImport,onClear,toast}){
+  const [over,setOver]=useState(false);
+  const [pending,setPending]=useState(null);
+  const [mode,setMode]=useState("append");
+  const fileRef=useRef(null);
+
+  const handleFile=useCallback((file)=>{
+    if(!file) return;
+    const name=file.name.toLowerCase();
+    const finish=(headers,rows)=>{
+      const cols=resolveCols(headers);
+      const missing=FIELDS.filter(f=>!cols[f.key]).map(f=>f.label);
+      if(!cols.pedido && !cols.rastreio && !cols.nome){
+        toast("Não reconheci as colunas dessa planilha. Confira se é o export de vendas do Eccosys.","warn"); return;
+      }
+      setPending({envios:rowsToEnvios(rows,cols), cols, missing, rawCount:rows.length});
+    };
+    if(name.endsWith(".csv")){
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        try{
+          let text=String(ev.target.result).replace(/^\uFEFF/,"");
+          const res=Papa.parse(text,{header:true,skipEmptyLines:true,delimiter:guessDelimiter(text)});
+          finish(res.meta.fields||[], res.data);
+        }catch(err){ console.error(err); toast("Não consegui ler o CSV.","warn"); }
+      };
+      reader.readAsText(file,"utf-8");
+    }else if(name.endsWith(".xlsx")||name.endsWith(".xls")){
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        try{
+          const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array",cellDates:true});
+          const ws=wb.Sheets[wb.SheetNames[0]];
+          const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:true,blankrows:false});
+          const headers=(aoa[0]||[]).map(h=>String(h).trim());
+          const rows=aoa.slice(1).map(row=>{ const o={}; headers.forEach((h,i)=>o[h]=row[i]); return o; })
+            .filter(o=>Object.values(o).some(v=>v!==""&&v!=null));
+          finish(headers,rows);
+        }catch(err){ console.error(err); toast("Não consegui ler o Excel.","warn"); }
+      };
+      reader.readAsArrayBuffer(file);
+    }else{ toast("Formato não suportado. Use .csv, .xlsx ou .xls","warn"); }
+  },[toast]);
+
+  const comRastreio = pending ? pending.envios.filter(e=>e.rastreio).length : 0;
+
+  return (<div className="view">
+    <div className="panel">
+      <h2>Importar planilha de vendas</h2>
+      <p className="desc">Solte o <b>.csv</b> exportado do Eccosys (também aceita .xlsx). O sistema puxa <b>Número do Pedido</b>, <b>Nome do contato</b>, <b>Cód. Rastreamento</b>, <b>Data de Faturamento</b> e <b>CPF/CNPJ</b> — e junta as linhas de produtos num envio por pedido.</p>
+
+      <div className={"drop"+(over?" over":"")}
+        onClick={()=>fileRef.current.click()}
+        onDragEnter={e=>{e.preventDefault();setOver(true);}}
+        onDragOver={e=>{e.preventDefault();setOver(true);}}
+        onDragLeave={e=>{e.preventDefault();setOver(false);}}
+        onDrop={e=>{e.preventDefault();setOver(false);handleFile(e.dataTransfer.files[0]);}}>
+        <div className="ico"><Em c="📦"/></div>
+        <h3>Arraste o CSV aqui ou clique para escolher</h3>
+        <p>O arquivo é lido no navegador e depois gravado na sua planilha do Google.</p>
+        <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" hidden
+          onChange={e=>{ handleFile(e.target.files[0]); e.target.value=""; }}/>
+      </div>
+
+      {pending && (<div style={{marginTop:20}}>
+        <div className="cols-detected">
+          {FIELDS.map(f=>(
+            <span key={f.key} className={"col-tag "+(pending.cols[f.key]?"ok":"miss")}>
+              <Ic d={pending.cols[f.key]?I.check:I.x} size={13} sw={2.5}/>{f.label}
+            </span>
+          ))}
+        </div>
+        <div className="summary">
+          <div className="s"><div className="n">{pending.envios.length}</div><div className="l">Envios (pedidos)</div></div>
+          <div className="s"><div className="n">{comRastreio}</div><div className="l">Com rastreio</div></div>
+          <div className="s"><div className="n">{pending.envios.length-comRastreio}</div><div className="l">Aguardando</div></div>
+          <div className="s"><div className="n">{pending.rawCount}</div><div className="l">Linhas no arquivo</div></div>
+        </div>
+
+        <div className="radio-row">
+          <label className={"radio-card"+(mode==="append"?" sel":"")}>
+            <input type="radio" name="mode" checked={mode==="append"} onChange={()=>setMode("append")}/>
+            <div><div className="t">Atualizar / adicionar</div><div className="d">Mantém os envios atuais, preenche rastreios novos e adiciona pedidos que faltavam. Não duplica nem apaga status, observações ou edições suas.</div></div>
+          </label>
+          <label className={"radio-card"+(mode==="replace"?" sel":"")}>
+            <input type="radio" name="mode" checked={mode==="replace"} onChange={()=>setMode("replace")}/>
+            <div><div className="t">Substituir tudo</div><div className="d">Apaga os envios da planilha e usa só os deste arquivo.</div></div>
+          </label>
+        </div>
+
+        <div style={{display:"flex",gap:10,marginTop:16,flexWrap:"wrap"}}>
+          <button className="btn" onClick={()=>{ onImport(pending.envios,mode); setPending(null); }}>
+            <Ic d={I.check} size={15}/> Importar {pending.envios.length} envios</button>
+          <button className="btn ghost" onClick={()=>setPending(null)}>Cancelar</button>
+        </div>
+      </div>)}
+    </div>
+
+    <div className="panel">
+      <div className="danger-zone">
+        <div style={{flex:1}}>
+          <div className="t">Limpar todos os envios</div>
+          <div className="d">Apaga todas as linhas da aba <b>Envios</b> da planilha. Não dá pra desfazer — exporte antes se precisar.</div>
+        </div>
+        <button className="btn danger sm" onClick={onClear} disabled={!data.length}>Limpar tudo</button>
+      </div>
+    </div>
+  </div>);
+}
+
+/* ============================================================
+   APP
+   ============================================================ */
+function App(){
+  const [theme,setTheme]=useState(()=>LS.get("qv_theme","claro"));
+  const [auth,setAuth]=useState(()=>LS.get("qv_auth","")==="ok");
+  const [loading,setLoading]=useState(true);
+  const [online,setOnline]=useState(true);
+  const [busy,setBusy]=useState(false);
+  const [data,setData]=useState([]);
+  const [custom,setCustom]=useState([]);
+  const [view,setView]=useState("envios");
+  const [filters,setFilters]=useState({q:"",from:"",to:"",status:"",range:"all"});
+  const [toasts,setToasts]=useState([]);
+  const [modal,setModal]=useState(null); // {tipo, envio, cb}
+
+  useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); LS.set("qv_theme",theme); },[theme]);
+
+  const toast=useCallback((msg,kind)=>{
+    const id=uid(); setToasts(t=>[...t,{id,msg,kind}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),2800);
+  },[]);
+
+  const statuses = useMemo(()=>{
+    const map=new Map();
+    STATUS_BASE.forEach(s=>map.set(s.nome,s));
+    custom.forEach(s=>{ if(!map.has(s.nome)) map.set(s.nome,s); });
+    return [...map.values()];
+  },[custom]);
+
+  const load=useCallback(async(silent)=>{
+    if(!silent) setLoading(true);
+    try{
+      const j=await API.get();
+      setData(j.envios||[]); setCustom(j.statuses||[]); setOnline(true);
+    }catch(e){
+      setOnline(false);
+      if(!silent) toast("Não consegui falar com a planilha. Confira a URL do Apps Script.","warn");
+    }finally{ setLoading(false); }
+  },[toast]);
+
+  useEffect(()=>{ if(auth) load(); },[auth,load]);
+  useEffect(()=>{
+    if(!auth) return;
+    const t=setInterval(()=>load(true),45000); // sincroniza a cada 45s
+    return ()=>clearInterval(t);
+  },[auth,load]);
+
+  const send=async(body, okMsg)=>{
+    setBusy(true);
+    try{ const r=await API.post(body); setOnline(true); if(okMsg) toast(okMsg,"good"); return r; }
+    catch(e){ setOnline(false); toast("Erro ao salvar na planilha: "+e.message,"warn"); throw e; }
+    finally{ setBusy(false); }
+  };
+
+  /* ---- ações ---- */
+  const saveEnvio=async(env)=>{
+    setData(d=>d.map(e=>e.id===env.id?env:e));
+    setModal(null);
+    try{ await send({action:"save", envio:env}, "Salvo ✓"); }catch(e){ load(true); }
+  };
+  const setStatus=async(env,novo)=>{
+    const upd={...env, status:novo, statusManual:true};
+    setData(d=>d.map(e=>e.id===env.id?upd:e));
+    try{ await send({action:"save", envio:upd}); }catch(e){ load(true); }
+  };
+  const removeEnvio=async(env)=>{
+    if(!window.confirm(`Apagar o envio de ${env.nome||"sem nome"}${env.pedido?" (pedido "+env.pedido+")":""}?`)) return;
+    setData(d=>d.filter(e=>e.id!==env.id));
+    try{ await send({action:"delete", id:env.id}, "Envio apagado"); }catch(e){ load(true); }
+  };
+  const clearAll=async()=>{
+    if(!window.confirm("Apagar TODOS os envios da planilha? Não dá pra desfazer.")) return;
+    setData([]);
+    try{ await send({action:"clear"}, "Tudo limpo"); }catch(e){ load(true); }
+  };
+  const doImport=async(envios,mode)=>{
+    const r=mergeEnvios(data,envios,mode);
+    setData(r.data); setView("envios");
+    try{
+      await send({action:"bulkSave", envios:r.data});
+      toast(mode==="replace" ? `${r.added} envios importados ✓` :
+        `${r.added} novo${r.added!==1?"s":""} · ${r.updated} atualizado${r.updated!==1?"s":""} ✓`, "good");
+    }catch(e){ load(true); }
+  };
+  const addStatus=async(nome,cor)=>{
+    setCustom(c=>[...c,{nome,cor}]);
+    try{ const r=await send({action:"addStatus", nome, cor}, `Status “${nome}” criado ✓`); if(r.statuses) setCustom(r.statuses); }catch(e){ load(true); }
+  };
+  const delStatus=async(nome)=>{
+    if(!window.confirm(`Apagar o status “${nome}”? Os envios que já usam ele continuam com o texto.`)) return;
+    setCustom(c=>c.filter(s=>s.nome!==nome));
+    try{ const r=await send({action:"deleteStatus", nome}); if(r.statuses) setCustom(r.statuses); }catch(e){ load(true); }
+  };
+
+  const onCopy=async code=>{ (await copy(code)) ? toast("Código copiado ✓","good") : toast("Não consegui copiar","warn"); };
+  const onShare=async env=>{
+    const url=trackUrl(env.rastreio);
+    const texto=`Olá${env.nome?", "+env.nome.split(" ")[0]:""}! 👗 Seu pedido da QVestido já está a caminho.\nCódigo de rastreio: ${env.rastreio}\nAcompanhe aqui: ${url}`;
+    if(navigator.share){
+      try{ await navigator.share({title:"Rastreio QVestido", text:texto, url}); return; }catch(e){ if(e.name==="AbortError") return; }
+    }
+    (await copy(texto)) ? toast("Mensagem de rastreio copiada ✓","good") : toast("Não consegui copiar","warn");
+  };
+
+  const filtered=useMemo(()=>{
+    const q=norm(filters.q);
+    return data.filter(r=>{
+      if(filters.status&&r.status!==filters.status) return false;
+      if(filters.from&&(!r.faturamento||r.faturamento<filters.from)) return false;
+      if(filters.to&&(!r.faturamento||r.faturamento>filters.to)) return false;
+      if(q){ const hay=norm([r.nome,r.cpf,r.pedido,r.rastreio,r.obs].join(" ")); if(!hay.includes(q)) return false; }
+      return true;
+    });
+  },[data,filters]);
+
+  const onExport=()=>{
+    if(!filtered.length){ toast("Nada para exportar","warn"); return; }
+    const aoa=[["Número do Pedido","Nome do contato","CPF/CNPJ","Cód. Rastreamento","Data de Faturamento","Status","Observações","Peças","Link Correios"]];
+    filtered.forEach(e=>aoa.push([e.pedido,e.nome,fmtCPF(e.cpf),e.rastreio,fmtDate(e.faturamento),e.status,e.obs||"",e.itens, e.rastreio?trackUrl(e.rastreio):""]));
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"]=[{wch:14},{wch:28},{wch:18},{wch:18},{wch:16},{wch:22},{wch:38},{wch:7},{wch:52}];
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Envios");
+    XLSX.writeFile(wb,`qvestido_envios_${toISO(new Date())}.xlsx`);
+    toast(`${filtered.length} envios exportados ✓`,"good");
+  };
+
+  /* ---- render ---- */
+  if(!auth) return <Login theme={theme} setTheme={setTheme} onOk={()=>{ LS.set("qv_auth","ok"); setAuth(true); }}/>;
+
+  return (<React.Fragment>
+    <div className="topbar"><div className="topbar-inner">
+      <div className="brand">
+        <img src={LOGO} alt="QVestido"/>
+        <span className="sub">Rastreamento · Correios</span>
+      </div>
+      <div className="nav">
+        <button className={view==="envios"?"active":""} onClick={()=>setView("envios")}>
+          <Ic d={I.menu}/> <span className="lbl">Envios</span> <span className="dot">{data.length}</span>
+        </button>
+        <button className={view==="importar"?"active":""} onClick={()=>setView("importar")}>
+          <Ic d={I.import}/> <span className="lbl">Importar</span>
+        </button>
+      </div>
+      <div className="spacer"></div>
+      <div className={"sync"+(busy?" busy":(online?"":" off"))}>
+        <span className="pip"></span>
+        <span className="lbl">{busy?"Salvando…":(online?"Planilha conectada":"Offline")}</span>
+      </div>
+      <button className="icon-btn" title="Recarregar da planilha" onClick={()=>load()}><Ic d={I.refresh} size={16}/></button>
+      <button className="btn ghost sm" onClick={onExport}><Ic d={I.export} size={15}/> <span className="lbl">Exportar</span></button>
+      <button className="icon-btn" title="Tema" onClick={()=>setModal({tipo:"tema"})}><Ic d={I.palette} size={17}/></button>
+      <button className="icon-btn" title="Sair" onClick={()=>{ LS.del("qv_auth"); setAuth(false); }}><Ic d={I.logout} size={16}/></button>
+    </div></div>
+
+    <div className="wrap">
+      {loading ? <div className="boot"><div className="spin"></div><div>Buscando os envios na planilha…</div></div>
+      : view==="envios" ? (
+        <EnviosView
+          data={data} statuses={statuses} filters={filters} setFilters={setFilters}
+          goImport={()=>setView("importar")}
+          onStatus={e=>setModal({tipo:"status", envio:e, cb:v=>setStatus(e,v)})}
+          onRemove={removeEnvio} onCopy={onCopy} onShare={onShare}
+          onEdit={e=>setModal({tipo:"edit", envio:e})}
+          onObs={e=>setModal({tipo:"obs", envio:e})}/>
+      ) : (
+        <ImportView data={data} onImport={doImport} onClear={clearAll} toast={toast}/>
+      )}
+    </div>
+
+    {modal?.tipo==="edit" && <EditModal envio={modal.envio} statuses={statuses} onClose={()=>setModal(null)} onSave={saveEnvio}/>}
+    {modal?.tipo==="obs" && <ObsModal envio={modal.envio} onClose={()=>setModal(null)} onSave={saveEnvio}/>}
+    {modal?.tipo==="status" && <StatusModal statuses={statuses} atual={modal.envio?.status}
+      onPick={v=>{ modal.cb(v); }}
+      onAdd={addStatus} onDelete={delStatus}
+      onClose={()=>setModal(modal.voltar||null)}/>}
+    {modal?.tipo==="tema" && <ThemeModal theme={theme} setTheme={setTheme} onClose={()=>setModal(null)}/>}
+
+    <div className="toast-wrap">{toasts.map(t=><div key={t.id} className={"toast"+(t.kind?" "+t.kind:"")}>{t.msg}</div>)}</div>
+  </React.Fragment>);
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
