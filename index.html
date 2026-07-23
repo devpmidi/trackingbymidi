@@ -69,6 +69,7 @@ button, input, select, textarea{font-family:inherit}
 button{cursor:pointer}
 ::selection{background:var(--accent-soft)}
 .em{width:1em;height:1em;vertical-align:-.15em;display:inline-block;object-fit:contain}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important; transition-duration:.01ms !important}}
 
 /* ================= TOPBAR ================= */
 .topbar{position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter:saturate(1.4) blur(12px); border-bottom:1px solid var(--line);}
@@ -90,9 +91,10 @@ button{cursor:pointer}
 .btn:disabled{opacity:.5; cursor:not-allowed}
 .btn.sm{padding:7px 12px; font-size:12.5px}
 .btn.danger{background:#C0553F; color:#fff} .btn.danger:hover{filter:brightness(.92); background:#C0553F}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
 /* ================= LAYOUT ================= */
-.wrap{max-width:1240px; margin:0 auto; padding:24px 22px 90px}
+.wrap{max-width:1240px; margin:0 auto; padding:24px 22px 110px}
 .view{animation:fade .25s ease}
 @keyframes fade{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
 
@@ -118,27 +120,67 @@ textarea.input{min-height:90px; resize:vertical; line-height:1.5}
 .chip.active{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
 .tb-sep{width:1px; align-self:stretch; background:var(--line); margin:2px 0}
 
+/* filtro de status múltiplo */
+.multi{position:relative}
+.multi-btn{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); padding:8px 32px 8px 11px; border-radius:9px; font-size:13.5px; min-height:37px; min-width:190px; text-align:left; transition:.15s; position:relative;}
+.multi-btn:hover{border-color:var(--accent)}
+.multi-btn .car{position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--muted)}
+.multi-btn.on{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.multi-panel{position:absolute; z-index:60; top:calc(100% + 6px); left:0; width:270px; max-height:340px; overflow:auto;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:12px; box-shadow:var(--shadow); padding:8px;}
+.multi-quick{display:flex; gap:5px; flex-wrap:wrap; padding:2px 4px 8px; border-bottom:1px solid var(--line); margin-bottom:6px}
+.multi-quick button{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); border-radius:20px; padding:4px 10px; font-size:11.5px; font-weight:600}
+.multi-quick button:hover{border-color:var(--accent); color:var(--accent)}
+.multi-opt{display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:9px; cursor:pointer; font-size:13px; user-select:none}
+.multi-opt:hover{background:var(--surface-2)}
+.multi-opt .swatch{width:9px; height:9px; border-radius:50%; background:var(--tone); flex:none}
+.multi-opt .cn{margin-left:auto; font-size:11px; color:var(--muted)}
+
+/* checkbox */
+.check{appearance:none; -webkit-appearance:none; width:17px; height:17px; border:1.5px solid var(--line-strong); border-radius:5px;
+  background:var(--surface); display:inline-grid; place-items:center; cursor:pointer; transition:.12s; flex:none; margin:0}
+.check:hover{border-color:var(--accent)}
+.check:checked{background:var(--accent); border-color:var(--accent)}
+.check:checked::after{content:""; width:9px; height:5px; border:2px solid var(--on-accent); border-top:0; border-right:0; transform:rotate(-45deg) translateY(-1px)}
+.check:indeterminate{background:var(--accent); border-color:var(--accent)}
+.check:indeterminate::after{content:""; width:9px; height:2px; background:var(--on-accent)}
+
 .date-group{margin-bottom:22px}
 .date-head{display:flex; align-items:center; gap:12px; padding:0 4px 10px;}
 .date-head h3{margin:0; font-weight:700; font-size:16px; letter-spacing:-.02em;}
 .date-head .count{font-size:12px; color:var(--muted); background:var(--surface-2); padding:3px 10px; border-radius:20px; font-weight:500}
 .date-head .rule{flex:1; height:1px; background:var(--line)}
+.date-head .selall{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); font-weight:500; cursor:pointer}
 .table-shell{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
 table{width:100%; border-collapse:collapse}
 thead th{text-align:left; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:700; padding:11px 14px; background:var(--surface-2); border-bottom:1px solid var(--line);}
 tbody td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:var(--surface-2)}
+tbody tr.sel td{background:var(--accent-soft)}
+th.cbx, td.cbx{width:40px; padding-right:0}
 .nome{font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
 .pecas{font-size:11px; color:var(--muted); background:var(--surface-2); border:1px solid var(--line); padding:1px 7px; border-radius:20px; font-weight:500; white-space:nowrap}
 .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; color:var(--ink-soft)}
 .code-cell{display:flex; align-items:center; gap:6px; flex-wrap:wrap}
 .code-cell .code{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; letter-spacing:.02em}
+.lock{font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); background:var(--accent-soft); border-radius:20px; padding:2px 7px}
 .mini{border:1px solid var(--line-strong); background:var(--surface); color:var(--muted); width:27px; height:27px; border-radius:7px; display:grid; place-items:center; transition:.15s; flex:none;}
 .mini:hover{border-color:var(--accent); color:var(--accent)}
 .mini.on{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
 .row-actions{display:flex; gap:6px; justify-content:flex-end}
 .obs-line{font-size:12px; color:var(--muted); margin-top:3px; display:flex; gap:5px; align-items:flex-start; max-width:340px}
+
+/* previsão de entrega */
+.date-pick{position:relative; display:inline-flex}
+.date-pick > input[type="date"]{position:absolute; inset:0; width:100%; height:100%; opacity:0; border:0; padding:0; margin:0; cursor:pointer}
+.prev-chip{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); border-radius:8px; padding:5px 10px;
+  font-size:12.5px; font-weight:500; display:inline-flex; align-items:center; gap:6px; transition:.15s; white-space:nowrap}
+.prev-chip:hover{border-color:var(--accent); color:var(--accent)}
+.prev-chip.empty{color:var(--muted)}
+.prev-chip.hoje{border-color:#C99A3F; color:#C99A3F; background:color-mix(in srgb,#C99A3F 12%,var(--surface))}
+.prev-chip.atras{border-color:#C0553F; color:#C0553F; background:color-mix(in srgb,#C0553F 10%,var(--surface))}
+.prev-wrap{display:inline-flex; align-items:center; gap:4px}
 
 /* status badge / select */
 .badge{
@@ -158,6 +200,15 @@ tbody tr:hover{background:var(--surface-2)}
   background-repeat:no-repeat; background-position:right 11px center;
 }
 .badge-select:focus{outline:none; box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* ================= BARRA DE SELEÇÃO ================= */
+.bulkbar{position:fixed; left:50%; bottom:20px; transform:translateX(-50%); z-index:70; max-width:calc(100vw - 24px);
+  background:var(--surface); border:1px solid var(--line-strong); box-shadow:var(--shadow); border-radius:16px;
+  padding:10px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; animation:up .2s cubic-bezier(.2,.8,.3,1)}
+@keyframes up{from{opacity:0; transform:translate(-50%,10px)}to{opacity:1; transform:translate(-50%,0)}}
+.bulkbar .cnt{font-weight:700; font-size:13.5px; padding:0 6px 0 4px; white-space:nowrap}
+.bulkbar select.input{min-width:180px}
+.bulkbar .sep{width:1px; align-self:stretch; background:var(--line)}
 
 /* ================= EMPTY / PANELS ================= */
 .empty{text-align:center; padding:70px 24px; background:var(--surface); border:1px dashed var(--line-strong); border-radius:var(--radius);}
@@ -211,8 +262,6 @@ tbody tr:hover{background:var(--surface-2)}
 .status-opt.sel{border-color:var(--accent); background:var(--accent-soft)}
 .status-opt .swatch{width:10px; height:10px; border-radius:50%; background:var(--tone); flex:none}
 .status-opt .custom-tag{margin-left:auto; font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em}
-.status-opt .del{margin-left:auto; opacity:0; color:var(--muted)}
-.status-opt:hover .del{opacity:1}
 
 .theme-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px}
 .theme-card{border:1px solid var(--line-strong); border-radius:12px; padding:12px; background:var(--surface); display:flex; flex-direction:column; gap:9px; transition:.15s; text-align:left}
@@ -247,13 +296,15 @@ tbody tr:hover{background:var(--surface-2)}
 .sync.off .pip{background:#C0553F}
 .sync.busy .pip{background:#C99A3F; animation:blink 1s infinite}
 @keyframes blink{50%{opacity:.3}}
+.more{display:block; margin:4px auto 0; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:9px 18px; font-size:13px; font-weight:600}
+.more:hover{border-color:var(--accent); color:var(--accent)}
 
 @media (max-width:900px){
   .cards{grid-template-columns:repeat(2,1fr)}
   .nav .lbl{display:none}
   .brand .sub{display:none}
   .topbar-inner{gap:10px; padding:10px 14px}
-  .wrap{padding:18px 14px 70px}
+  .wrap{padding:18px 14px 110px}
   .sync .lbl{display:none}
   thead{display:none}
   table,tbody,tr,td{display:block; width:100%}
@@ -261,8 +312,11 @@ tbody tr:hover{background:var(--surface-2)}
   tbody tr:hover{background:transparent}
   tbody td{border:0; padding:5px 12px; display:flex; justify-content:space-between; gap:14px; align-items:center}
   tbody td::before{content:attr(data-l); font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700}
+  td.cbx{width:100%}
   .obs-line{max-width:none}
   .grid2{grid-template-columns:1fr}
+  .multi-btn{min-width:100%}
+  .multi{width:100%}
 }
 </style>
 </head>
@@ -270,7 +324,7 @@ tbody tr:hover{background:var(--surface-2)}
 <div id="root"><div class="boot"><div class="spin"></div><div>Carregando…</div></div></div>
 
 <script type="text/babel" data-presets="react">
-const {useState, useEffect, useMemo, useRef, useCallback} = React;
+const {useState, useEffect, useMemo, useRef, useCallback, memo} = React;
 
 /* ============================================================
    ⚙️  CONFIGURAÇÃO — só mexa aqui
@@ -280,6 +334,8 @@ const LOGIN_USER = "QVESTIDO";
 const LOGIN_PASS = "QVESTIDO1234";
 const CORREIOS = "https://rastreamento.correios.com.br/app/index.php?objetos=";
 const LOGO = "https://recursos.qvestido.com.br/i/SVG-diversos/logo.svg";
+const SYNC_MS = 90000;   // sincroniza a cada 90s (só quando a aba está aberta e nada pendente)
+const PAGE = 120;        // quantos envios renderiza por vez (evita travar com lista grande)
 /* ============================================================ */
 
 /* ---------- Emojis iOS (via emoji-datasource-apple) ---------- */
@@ -289,7 +345,7 @@ const EMOJI = {
   "🔗":"1f517","📝":"1f4dd","🗑️":"1f5d1-fe0f","🔒":"1f512","🎨":"1f3a8","☁️":"2601-fe0f",
   "🏠":"1f3e0","🛵":"1f6f5","↩️":"21a9-fe0f","⏳":"23f3","❌":"274c","📮":"1f4ee","📍":"1f4cd",
   "✏️":"270f-fe0f","⚠️":"26a0-fe0f","🎉":"1f389","📤":"1f4e4","📥":"1f4e5","👋":"1f44b",
-  "🕐":"1f550","🚪":"1f6aa","➕":"2795","💬":"1f4ac","👗":"1f457"
+  "🕐":"1f550","🚪":"1f6aa","➕":"2795","💬":"1f4ac","👗":"1f457","📅":"1f4c5"
 };
 const Em = ({c, size}) => {
   const code = EMOJI[c];
@@ -339,6 +395,7 @@ const PALETA = ["#B45B78","#5B8DD6","#6C6AB8","#3F8768","#C99A3F","#C0553F","#3F
 const FINALIZADOS = ["Entregue","Retira na loja"];
 const EM_ROTA = ["Postado","Em trânsito","Saiu para entrega","Etiqueta emitida","Parado no CDD","Correção de rota","Motoboy","Enviado junto","Aguardando retirada"];
 const PROBLEMAS = ["Tentativa de entrega não efetuada","Carteiro não atendido","Suspendida","Retornou para o remetente","Em atraso"];
+const STATUS_IMPORT = "Etiqueta emitida"; // status de quem chega da planilha já com código
 
 /* ---------- Helpers ---------- */
 const pad = n => String(n).padStart(2,"0");
@@ -346,21 +403,23 @@ const norm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const trackUrl = c => CORREIOS + encodeURIComponent(String(c||"").trim());
+const truthy = v => v===true || v===1 || v==="1" || String(v).toLowerCase()==="true" || String(v).toLowerCase()==="sim";
 
 function parseDate(v){
   if(v==null||v==="") return "";
   if(v instanceof Date && !isNaN(v)) return toISO(v);
   if(typeof v==="number" && isFinite(v)){ const d=new Date(Math.round((v-25569)*86400000)); if(!isNaN(d)) return toISO(d); }
   const s=String(v).trim();
-  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
-  if(m){ let[_,d,mo,y]=m; if(y.length===2) y="20"+y; return `${y}-${pad(mo)}-${pad(d)}`; }
-  m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  let m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
   if(m){ let[_,y,mo,d]=m; return `${y}-${pad(mo)}-${pad(d)}`; }
-  const d2 = new Date(s);                    // "Wed May 27 2026 00:00:00 GMT..."
+  m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){ let[_,d,mo,y]=m; if(y.length===2) y="20"+y; return `${y}-${pad(mo)}-${pad(d)}`; }
+  const d2 = new Date(s);
   if(!isNaN(d2)) return toISO(d2);
   return "";
 }
 const fmtDate = iso => { if(!iso) return ""; const[y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; };
+const fmtShort = iso => { if(!iso) return ""; const[y,m,d]=iso.split("-"); return `${d}/${m}`; };
 function fmtDateLong(iso){
   if(!iso) return "Sem data de faturamento";
   const[y,m,d]=iso.split("-");
@@ -381,6 +440,23 @@ async function copy(text){
       document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); return true;
     }catch(e2){ return false; }
   }
+}
+/* normaliza um envio vindo da planilha */
+function limpar(e){
+  return {
+    id: e.id || uid(),
+    pedido: String(e.pedido??"").trim(),
+    nome: String(e.nome??"").trim(),
+    cpf: String(e.cpf??"").trim(),
+    rastreio: String(e.rastreio??"").trim(),
+    faturamento: parseDate(e.faturamento),
+    previsao: parseDate(e.previsao),
+    itens: Math.max(1, parseInt(e.itens,10) || 1),
+    status: String(e.status??"").trim() || "Aguardando",
+    obs: String(e.obs??""),
+    statusManual: truthy(e.statusManual),
+    rastreioManual: truthy(e.rastreioManual)
+  };
 }
 
 /* ---------- API (Google Sheets via Apps Script) ---------- */
@@ -438,28 +514,30 @@ function rowsToEnvios(rows, cols){
       if(!g.faturamento&&fat) g.faturamento=fat;
     }
   });
-  return [...map.values()].map(e=>({ ...e, id:uid(), obs:"",
-    status: e.rastreio?"Postado":"Aguardando", statusManual:false }));
+  return [...map.values()].map(e=>({ ...e, id:uid(), obs:"", previsao:"",
+    status: e.rastreio?STATUS_IMPORT:"Aguardando", statusManual:false, rastreioManual:false }));
 }
+/* devolve { data, added, updated, changed } — changed = só o que precisa ir pra planilha */
 function mergeEnvios(current, incoming, mode){
-  if(mode==="replace") return { data:incoming, added:incoming.length, updated:0 };
+  if(mode==="replace") return { data:incoming, added:incoming.length, updated:0, changed:incoming };
   const data=current.map(e=>({...e}));
   const byPed=new Map(data.filter(e=>e.pedido).map(e=>[e.pedido,e]));
-  let added=0, updated=0;
+  let added=0, updated=0; const changed=[];
   incoming.forEach(inc=>{
     const ex=inc.pedido?byPed.get(inc.pedido):null;
     if(ex){
       let ch=false;
-      if(inc.rastreio && inc.rastreio!==ex.rastreio){ ex.rastreio=inc.rastreio; ch=true; }
+      // rastreio editado à mão (expedição avulsa) NUNCA é sobrescrito pela planilha
+      if(inc.rastreio && inc.rastreio!==ex.rastreio && !ex.rastreioManual){ ex.rastreio=inc.rastreio; ch=true; }
       if(inc.faturamento && !ex.faturamento){ ex.faturamento=inc.faturamento; ch=true; }
-      if(inc.itens>ex.itens) ex.itens=inc.itens;
-      if(!ex.statusManual && ex.rastreio && ex.status==="Aguardando"){ ex.status="Postado"; ch=true; }
-      if(ch) updated++;
+      if(inc.itens>ex.itens){ ex.itens=inc.itens; ch=true; }
+      if(!ex.statusManual && ex.rastreio && ex.status==="Aguardando"){ ex.status=STATUS_IMPORT; ch=true; }
+      if(ch){ updated++; changed.push(ex); }
     }else{
-      data.push(inc); if(inc.pedido) byPed.set(inc.pedido,inc); added++;
+      data.push(inc); if(inc.pedido) byPed.set(inc.pedido,inc); added++; changed.push(inc);
     }
   });
-  return { data, added, updated };
+  return { data, added, updated, changed };
 }
 function guessDelimiter(text){
   const line=(text.split(/\r?\n/)[0]||"");
@@ -487,8 +565,9 @@ const I={
   refresh:<g><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></g>,
   logout:<g><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></g>,
   plus:<path d="M12 5v14M5 12h14"/>,
+  cal:<g><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></g>,
 };
-const Ic=({d,size=16,sw=2})=>(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
+const Ic=({d,size=16,sw=2,className})=>(<svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{d}</svg>);
 
 /* ============================================================
    LOGIN
@@ -554,12 +633,15 @@ function EditModal({envio, statuses, onSave, onClose}){
   const [f,setF]=useState({...envio});
   const set=(k,v)=>setF(x=>({...x,[k]:v}));
   const cor=(statuses.find(s=>s.nome===f.status)||{cor:"#8A8078"}).cor;
+  const salvar=()=>onSave({
+    ...f,
+    statusManual: f.status!==envio.status ? true : envio.statusManual,
+    rastreioManual: f.rastreio!==envio.rastreio ? true : envio.rastreioManual
+  });
   return (<Modal title="Editar envio" icon="✏️" onClose={onClose}
     foot={<React.Fragment>
       <button className="btn ghost" onClick={onClose}>Cancelar</button>
-      <button className="btn" onClick={()=>onSave({...f, statusManual: f.status!==envio.status ? true : envio.statusManual})}>
-        <Ic d={I.check} size={15}/> Salvar
-      </button>
+      <button className="btn" onClick={salvar}><Ic d={I.check} size={15}/> Salvar</button>
     </React.Fragment>}>
     <div className="grid2">
       <div className="fg"><label>Nome do contato</label>
@@ -577,17 +659,26 @@ function EditModal({envio, statuses, onSave, onClose}){
       <div className="fg"><label>Código de rastreamento</label>
         <input className="input mono" value={f.rastreio} placeholder="AA123456789BR"
           onChange={e=>set("rastreio", e.target.value.toUpperCase().replace(/\s/g,""))}/>
-        <div className="hint">Mudou o código? É só colar o novo aqui.</div>
+        <div className="hint">Colou um código de expedição avulsa? Ele fica travado e a próxima planilha não sobrescreve.</div>
       </div>
+      <div className="fg"><label>Previsão de entrega</label>
+        <input type="date" className="input" value={f.previsao||""} onChange={e=>set("previsao",e.target.value)}/>
+        {f.previsao && <button className="btn ghost sm" style={{marginTop:6,alignSelf:"flex-start"}} onClick={()=>set("previsao","")}>Tirar previsão</button>}
+      </div>
+    </div>
+    <div className="grid2">
       <div className="fg"><label>Peças no pedido</label>
         <input type="number" min="1" className="input" value={f.itens} onChange={e=>set("itens", Math.max(1, +e.target.value||1))}/></div>
+      <div className="fg"><label>Status</label>
+        <select className="badge-select" style={{"--tone":cor}} value={f.status} onChange={e=>set("status",e.target.value)}>
+          {statuses.map(s=><option key={s.nome} value={s.nome}>{s.nome}</option>)}
+        </select>
+      </div>
     </div>
-    <div className="fg"><label>Status</label>
-      <select className="badge-select" style={{"--tone":cor}} value={f.status} onChange={e=>set("status",e.target.value)}>
-        {statuses.map(s=><option key={s.nome} value={s.nome}>{s.nome}</option>)}
-      </select>
-      <div className="hint">Para criar um status novo, use o botão de status direto na lista de envios.</div>
-    </div>
+    {f.rastreioManual && <div className="hint" style={{marginTop:-4,marginBottom:12}}>
+      <b>Rastreio travado.</b>{" "}
+      <button className="btn ghost sm" onClick={()=>set("rastreioManual",false)}>Destravar</button>
+    </div>}
     <div className="fg" style={{marginBottom:0}}><label>Observações do rastreamento</label>
       <textarea className="input" value={f.obs||""} placeholder="Ex.: cliente pediu pra entregar depois das 14h · objeto parado no CDD Petrolina desde 03/07"
         onChange={e=>set("obs",e.target.value)}/></div>
@@ -672,17 +763,78 @@ function ThemeModal({theme,setTheme,onClose}){
 }
 
 /* ============================================================
+   FILTRO DE STATUS (multi)
+   ============================================================ */
+function MultiStatus({statuses, value, counts, onChange}){
+  const [open,setOpen]=useState(false);
+  const box=useRef(null);
+  useEffect(()=>{
+    if(!open) return;
+    const h=ev=>{ if(box.current && !box.current.contains(ev.target)) setOpen(false); };
+    const k=ev=>ev.key==="Escape"&&setOpen(false);
+    document.addEventListener("mousedown",h); document.addEventListener("keydown",k);
+    return ()=>{ document.removeEventListener("mousedown",h); document.removeEventListener("keydown",k); };
+  },[open]);
+  const label = value.length===0 ? "Todos os status" : value.length===1 ? value[0] : value.length+" status selecionados";
+  const toggle=n=>onChange(value.includes(n)?value.filter(x=>x!==n):[...value,n]);
+  return (<div className="multi" ref={box}>
+    <button className={"multi-btn"+(value.length?" on":"")} onClick={()=>setOpen(o=>!o)}>
+      {label}<Ic className="car" d={I.caret} size={13}/>
+    </button>
+    {open && <div className="multi-panel">
+      <div className="multi-quick">
+        <button onClick={()=>onChange(EM_ROTA.slice())}>Em rota</button>
+        <button onClick={()=>onChange(PROBLEMAS.slice())}>Problemas</button>
+        <button onClick={()=>onChange(FINALIZADOS.slice())}>Finalizados</button>
+        <button onClick={()=>onChange([])}>Limpar</button>
+      </div>
+      {statuses.map(s=>(
+        <label key={s.nome} className="multi-opt" style={{"--tone":s.cor}}>
+          <input className="check" type="checkbox" checked={value.includes(s.nome)} onChange={()=>toggle(s.nome)}/>
+          <span className="swatch"></span>{s.nome}
+          <span className="cn">{counts[s.nome]||0}</span>
+        </label>
+      ))}
+    </div>}
+  </div>);
+}
+
+/* ============================================================
    LISTA
    ============================================================ */
-function StatusBadge({value, statuses, onClick}){
+const StatusBadge = memo(function StatusBadge({value, statuses, onClick}){
   const s = statuses.find(x=>x.nome===value) || {cor:"#8A8078"};
   return (<button className="badge" style={{"--tone":s.cor}} onClick={onClick}>
     {value} <Ic className="caret" d={I.caret} size={12} sw={2.5}/>
   </button>);
+});
+
+function PrevisaoCell({e, onSet}){
+  const ref=useRef(null);
+  const hoje=toISO(new Date());
+  const fim=FINALIZADOS.indexOf(e.status)>=0;
+  let cls="prev-chip";
+  if(!e.previsao) cls+=" empty";
+  else if(!fim && e.previsao<hoje) cls+=" atras";
+  else if(!fim && e.previsao===hoje) cls+=" hoje";
+  return (<span className="prev-wrap">
+    <span className="date-pick">
+      <button className={cls} title={e.previsao?("Previsão: "+fmtDate(e.previsao)):"Definir previsão de entrega"}>
+        <Ic d={I.cal} size={14}/>{e.previsao ? fmtShort(e.previsao) : "definir"}
+      </button>
+      <input ref={ref} type="date" value={e.previsao||""} aria-label="Previsão de entrega"
+        onClick={ev=>{ try{ ev.currentTarget.showPicker(); }catch(_){} }}
+        onChange={ev=>onSet(e, ev.target.value)}/>
+    </span>
+    {e.previsao && <button className="mini" title="Tirar previsão" onClick={()=>onSet(e,"")}><Ic d={I.x} size={12}/></button>}
+  </span>);
 }
 
-function EnvioRow({e, statuses, onStatus, onRemove, onCopy, onShare, onEdit, onObs}){
-  return (<tr>
+const EnvioRow = memo(function EnvioRow({e, statuses, checked, onToggle, onStatus, onRemove, onCopy, onShare, onEdit, onObs, onPrevisao}){
+  return (<tr className={checked?"sel":""}>
+    <td className="cbx" data-l="Selecionar">
+      <input className="check" type="checkbox" checked={checked} onChange={()=>onToggle(e.id)} aria-label={"Selecionar "+(e.nome||e.pedido)}/>
+    </td>
     <td data-l="Cliente">
       <div>
         <div className="nome">
@@ -698,12 +850,14 @@ function EnvioRow({e, statuses, onStatus, onRemove, onCopy, onShare, onEdit, onO
       {e.rastreio ? (
         <div className="code-cell">
           <span className="code">{e.rastreio}</span>
+          {e.rastreioManual && <span className="lock" title="Código editado à mão — a planilha não sobrescreve">fixo</span>}
           <button className="mini" title="Copiar código" onClick={()=>onCopy(e.rastreio)}><Ic d={I.copy} size={14}/></button>
           <button className="mini" title="Compartilhar link dos Correios" onClick={()=>onShare(e)}><Ic d={I.share} size={14}/></button>
           <a className="mini" title="Rastrear nos Correios" href={trackUrl(e.rastreio)} target="_blank" rel="noopener"><Ic d={I.ext} size={14}/></a>
         </div>
       ) : <span className="mono" style={{color:"var(--muted)"}}>sem rastreio</span>}
     </td>
+    <td data-l="Previsão"><PrevisaoCell e={e} onSet={onPrevisao}/></td>
     <td data-l="Status"><StatusBadge value={e.status} statuses={statuses} onClick={()=>onStatus(e)}/></td>
     <td data-l="Ações"><div className="row-actions">
       <button className={"mini"+(e.obs?" on":"")} title="Observações" onClick={()=>onObs(e)}><Ic d={I.note} size={14}/></button>
@@ -711,20 +865,29 @@ function EnvioRow({e, statuses, onStatus, onRemove, onCopy, onShare, onEdit, onO
       <button className="mini" title="Apagar" onClick={()=>onRemove(e)}><Ic d={I.trash} size={14}/></button>
     </div></td>
   </tr>);
-}
+});
 
-function DateGroup({iso, rows, ...h}){
+function DateGroup({iso, rows, sel, onToggleGroup, ...h}){
+  const marcados=rows.filter(r=>sel.has(r.id)).length;
+  const todos=marcados===rows.length && rows.length>0;
+  const ref=useRef(null);
+  useEffect(()=>{ if(ref.current) ref.current.indeterminate = marcados>0 && !todos; },[marcados,todos]);
   return (<div className="date-group">
     <div className="date-head">
+      <label className="selall">
+        <input ref={ref} className="check" type="checkbox" checked={todos}
+          onChange={()=>onToggleGroup(rows.map(r=>r.id), !todos)} aria-label="Selecionar o dia inteiro"/>
+      </label>
       <h3>{fmtDateLong(iso)}</h3>
       <span className="count">{rows.length} envio{rows.length>1?"s":""}</span>
       <span className="rule"></span>
     </div>
     <div className="table-shell"><table>
       <thead><tr>
-        <th>Cliente</th><th>Pedido</th><th>CPF/CNPJ</th><th>Código de rastreamento</th><th>Status</th><th style={{textAlign:"right"}}>Ações</th>
+        <th className="cbx"></th>
+        <th>Cliente</th><th>Pedido</th><th>CPF/CNPJ</th><th>Código de rastreamento</th><th>Previsão</th><th>Status</th><th style={{textAlign:"right"}}>Ações</th>
       </tr></thead>
-      <tbody>{rows.map(e=><EnvioRow key={e.id} e={e} {...h}/>)}</tbody>
+      <tbody>{rows.map(e=><EnvioRow key={e.id} e={e} checked={sel.has(e.id)} {...h}/>)}</tbody>
     </table></div>
   </div>);
 }
@@ -744,24 +907,21 @@ function Cards({rows}){
   ))}</div>);
 }
 
-function EnviosView({data, statuses, filters, setFilters, goImport, ...h}){
-  const rows=useMemo(()=>{
-    const q=norm(filters.q);
-    return data.filter(r=>{
-      if(filters.status && r.status!==filters.status) return false;
-      if(filters.from && (!r.faturamento || r.faturamento<filters.from)) return false;
-      if(filters.to && (!r.faturamento || r.faturamento>filters.to)) return false;
-      if(q){ const hay=norm([r.nome,r.cpf,r.pedido,r.rastreio,r.obs].join(" ")); if(!hay.includes(q)) return false; }
-      return true;
-    });
-  },[data,filters]);
+function EnviosView({data, rows, statuses, filters, setFilters, goImport, sel, onToggleGroup, ...h}){
+  const [limite,setLimite]=useState(PAGE);
+  useEffect(()=>{ setLimite(PAGE); },[filters]);
 
+  const counts=useMemo(()=>{
+    const c={}; data.forEach(r=>{ c[r.status]=(c[r.status]||0)+1; }); return c;
+  },[data]);
+
+  const visiveis = rows.slice(0, limite);
   const groups=useMemo(()=>{
     const g={};
-    rows.forEach(r=>{ const k=r.faturamento||"__none__"; (g[k]=g[k]||[]).push(r); });
+    visiveis.forEach(r=>{ const k=r.faturamento||"__none__"; (g[k]=g[k]||[]).push(r); });
     const keys=Object.keys(g).sort((a,b)=> a==="__none__"?1 : b==="__none__"?-1 : b.localeCompare(a));
     return keys.map(k=>({iso:k==="__none__"?"":k, rows:g[k]}));
-  },[rows]);
+  },[visiveis]);
 
   const preset=r=>{
     const now=new Date(); let from="",to="";
@@ -784,11 +944,9 @@ function EnviosView({data, statuses, filters, setFilters, goImport, ...h}){
         <input type="date" className="input" value={filters.from} onChange={e=>setFilters(f=>({...f,from:e.target.value,range:""}))}/></div>
       <div className="field"><label>até</label>
         <input type="date" className="input" value={filters.to} onChange={e=>setFilters(f=>({...f,to:e.target.value,range:""}))}/></div>
-      <div className="field"><label>Status</label>
-        <select className="input" value={filters.status} onChange={e=>setFilters(f=>({...f,status:e.target.value}))}>
-          <option value="">Todos os status</option>
-          {statuses.map(s=><option key={s.nome} value={s.nome}>{s.nome}</option>)}
-        </select></div>
+      <div className="field"><label>Status (pode marcar vários)</label>
+        <MultiStatus statuses={statuses} value={filters.status} counts={counts}
+          onChange={v=>setFilters(f=>({...f,status:v}))}/></div>
       <div className="field">
         <div className="chips">
           {[["today","Hoje"],["7","7 dias"],["month","Este mês"],["all","Tudo"]].map(([r,l])=>(
@@ -806,8 +964,12 @@ function EnviosView({data, statuses, filters, setFilters, goImport, ...h}){
     ) : rows.length===0 ? (
       <div className="empty"><div className="ico"><Em c="🔍"/></div><h3>Nada por aqui</h3>
         <p>Nenhum envio bate com os filtros atuais. Tente limpar a busca ou ampliar o período.</p>
-        <button className="btn ghost" onClick={()=>setFilters({q:"",from:"",to:"",status:"",range:"all"})}>Limpar filtros</button></div>
-    ) : groups.map(g=><DateGroup key={g.iso||"none"} iso={g.iso} rows={g.rows} statuses={statuses} {...h}/>)}
+        <button className="btn ghost" onClick={()=>setFilters({q:"",from:"",to:"",status:[],range:"all"})}>Limpar filtros</button></div>
+    ) : (<React.Fragment>
+      {groups.map(g=><DateGroup key={g.iso||"none"} iso={g.iso} rows={g.rows} statuses={statuses} sel={sel} onToggleGroup={onToggleGroup} {...h}/>)}
+      {rows.length>limite &&
+        <button className="more" onClick={()=>setLimite(l=>l+PAGE)}>Mostrar mais {Math.min(PAGE, rows.length-limite)} de {rows.length-limite}</button>}
+    </React.Fragment>)}
   </div>);
 }
 
@@ -863,7 +1025,7 @@ function ImportView({data,onImport,onClear,toast}){
   return (<div className="view">
     <div className="panel">
       <h2>Importar planilha de vendas</h2>
-      <p className="desc">Solte o <b>.csv</b> exportado do Eccosys (também aceita .xlsx). O sistema puxa <b>Número do Pedido</b>, <b>Nome do contato</b>, <b>Cód. Rastreamento</b>, <b>Data de Faturamento</b> e <b>CPF/CNPJ</b> — e junta as linhas de produtos num envio por pedido.</p>
+      <p className="desc">Solte o <b>.csv</b> exportado do Eccosys (também aceita .xlsx). O sistema puxa <b>Número do Pedido</b>, <b>Nome do contato</b>, <b>Cód. Rastreamento</b>, <b>Data de Faturamento</b> e <b>CPF/CNPJ</b> — e junta as linhas de produtos num envio por pedido. Quem chega com código entra como <b>{STATUS_IMPORT}</b>.</p>
 
       <div className={"drop"+(over?" over":"")}
         onClick={()=>fileRef.current.click()}
@@ -896,7 +1058,7 @@ function ImportView({data,onImport,onClear,toast}){
         <div className="radio-row">
           <label className={"radio-card"+(mode==="append"?" sel":"")}>
             <input type="radio" name="mode" checked={mode==="append"} onChange={()=>setMode("append")}/>
-            <div><div className="t">Atualizar / adicionar</div><div className="d">Mantém os envios atuais, preenche rastreios novos e adiciona pedidos que faltavam. Não duplica nem apaga status, observações ou edições suas.</div></div>
+            <div><div className="t">Atualizar / adicionar</div><div className="d">Mantém os envios atuais, preenche rastreios novos e adiciona pedidos que faltavam. Não mexe em status, observações, previsão nem em códigos que você editou à mão.</div></div>
           </label>
           <label className={"radio-card"+(mode==="replace"?" sel":"")}>
             <input type="radio" name="mode" checked={mode==="replace"} onChange={()=>setMode("replace")}/>
@@ -932,14 +1094,21 @@ function App(){
   const [auth,setAuth]=useState(()=>LS.get("qv_auth","")==="ok");
   const [loading,setLoading]=useState(true);
   const [online,setOnline]=useState(true);
-  const [busy,setBusy]=useState(false);
+  const [busy,setBusy]=useState(0);
   const [data,setData]=useState([]);
   const [custom,setCustom]=useState([]);
   const [view,setView]=useState("envios");
-  const [filters,setFilters]=useState({q:"",from:"",to:"",status:"",range:"all"});
+  const [filters,setFilters]=useState({q:"",from:"",to:"",status:[],range:"all"});
+  const [sel,setSel]=useState(()=>new Set());
+  const [bulkStatus,setBulkStatus]=useState("Entregue");
   const [toasts,setToasts]=useState([]);
-  const [modal,setModal]=useState(null); // {tipo, envio, cb}
+  const [modal,setModal]=useState(null);
 
+  const dataRef=useRef([]);                 // última lista, sem re-render
+  const pendingRef=useRef(new Set());       // ids com gravação em andamento
+  const queueRef=useRef(Promise.resolve()); // fila: um POST por vez
+
+  useEffect(()=>{ dataRef.current=data; },[data]);
   useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); LS.set("qv_theme",theme); },[theme]);
 
   const toast=useCallback((msg,kind)=>{
@@ -954,12 +1123,21 @@ function App(){
     return [...map.values()];
   },[custom]);
 
+  /* ---------- leitura (não atropela o que está sendo salvo) ---------- */
   const load=useCallback(async(silent)=>{
+    if(silent && (pendingRef.current.size>0 || document.hidden)) return;
     if(!silent) setLoading(true);
     try{
       const j=await API.get();
-      const limpos=(j.envios||[]).map(e=>({...e, faturamento: parseDate(e.faturamento)}));
-      setData(limpos); setCustom(j.statuses||[]); setOnline(true);
+      const local=new Map(dataRef.current.map(e=>[e.id,e]));
+      const vindo=(j.envios||[]).map(e=>{
+        const id=e.id;
+        if(id && pendingRef.current.has(id) && local.has(id)) return local.get(id); // versão local vence
+        return limpar(e);
+      });
+      const ids=new Set(vindo.map(e=>e.id));
+      pendingRef.current.forEach(id=>{ if(!ids.has(id) && local.has(id)) vindo.push(local.get(id)); });
+      setData(vindo); setCustom(j.statuses||[]); setOnline(true);
     }catch(e){
       setOnline(false);
       if(!silent) toast("Não consegui falar com a planilha. Confira a URL do Apps Script.","warn");
@@ -969,71 +1147,116 @@ function App(){
   useEffect(()=>{ if(auth) load(); },[auth,load]);
   useEffect(()=>{
     if(!auth) return;
-    const t=setInterval(()=>load(true),45000); // sincroniza a cada 45s
-    return ()=>clearInterval(t);
+    const t=setInterval(()=>load(true),SYNC_MS);
+    const vis=()=>{ if(!document.hidden) load(true); };
+    document.addEventListener("visibilitychange",vis);
+    return ()=>{ clearInterval(t); document.removeEventListener("visibilitychange",vis); };
   },[auth,load]);
 
-  const send=async(body, okMsg)=>{
-    setBusy(true);
-    try{ const r=await API.post(body); setOnline(true); if(okMsg) toast(okMsg,"good"); return r; }
-    catch(e){ setOnline(false); toast("Erro ao salvar na planilha: "+e.message,"warn"); throw e; }
-    finally{ setBusy(false); }
-  };
+  /* ---------- escrita em fila ---------- */
+  const send=useCallback((body, okMsg, ids)=>{
+    if(ids) ids.forEach(id=>pendingRef.current.add(id));
+    setBusy(b=>b+1);
+    const run=async()=>{
+      try{
+        const r=await API.post(body);
+        setOnline(true);
+        if(okMsg) toast(okMsg,"good");
+        return r;
+      }catch(err){
+        setOnline(false);
+        toast("Erro ao salvar na planilha: "+err.message,"warn");
+        throw err;
+      }finally{
+        if(ids) ids.forEach(id=>pendingRef.current.delete(id));
+        setBusy(b=>b-1);
+      }
+    };
+    const p=queueRef.current.then(run,run);
+    queueRef.current=p.catch(()=>{});
+    return p;
+  },[toast]);
 
-  /* ---- ações ---- */
-  const saveEnvio=async(env)=>{
+  /* ---------- ações ---------- */
+  const saveEnvio=useCallback(async(env)=>{
     setData(d=>d.map(e=>e.id===env.id?env:e));
     setModal(null);
-    try{ await send({action:"save", envio:env}, "Salvo ✓"); }catch(e){ load(true); }
-  };
-  const setStatus=async(env,novo)=>{
+    try{ await send({action:"save", envio:env}, "Salvo ✓", [env.id]); }catch(e){ load(true); }
+  },[send,load]);
+
+  const setStatus=useCallback(async(env,novo)=>{
     const upd={...env, status:novo, statusManual:true};
     setData(d=>d.map(e=>e.id===env.id?upd:e));
-    try{ await send({action:"save", envio:upd}); }catch(e){ load(true); }
-  };
-  const removeEnvio=async(env)=>{
+    try{ await send({action:"save", envio:upd}, null, [env.id]); }catch(e){ load(true); }
+  },[send,load]);
+
+  const setPrevisao=useCallback(async(env,iso)=>{
+    const upd={...env, previsao: iso ? parseDate(iso) : ""};
+    setData(d=>d.map(e=>e.id===env.id?upd:e));
+    try{ await send({action:"save", envio:upd}, iso?("Previsão: "+fmtDate(upd.previsao)+" ✓"):"Previsão removida", [env.id]); }
+    catch(e){ load(true); }
+  },[send,load]);
+
+  const removeEnvio=useCallback(async(env)=>{
     if(!window.confirm(`Apagar o envio de ${env.nome||"sem nome"}${env.pedido?" (pedido "+env.pedido+")":""}?`)) return;
     setData(d=>d.filter(e=>e.id!==env.id));
-    try{ await send({action:"delete", id:env.id}, "Envio apagado"); }catch(e){ load(true); }
-  };
+    setSel(s=>{ const n=new Set(s); n.delete(env.id); return n; });
+    try{ await send({action:"delete", id:env.id}, "Envio apagado", [env.id]); }catch(e){ load(true); }
+  },[send,load]);
+
   const clearAll=async()=>{
     if(!window.confirm("Apagar TODOS os envios da planilha? Não dá pra desfazer.")) return;
-    setData([]);
+    setData([]); setSel(new Set());
     try{ await send({action:"clear"}, "Tudo limpo"); }catch(e){ load(true); }
   };
+
   const doImport=async(envios,mode)=>{
-    const r=mergeEnvios(data,envios,mode);
-    setData(r.data); setView("envios");
+    const r=mergeEnvios(dataRef.current,envios,mode);
+    setData(r.data); setView("envios"); setSel(new Set());
     try{
-      await send({action:"bulkSave", envios:r.data});
+      if(mode==="replace") await send({action:"bulkSave", envios:r.data});
+      else if(r.changed.length) await send({action:"saveMany", envios:r.changed}, null, r.changed.map(e=>e.id));
       toast(mode==="replace" ? `${r.added} envios importados ✓` :
         `${r.added} novo${r.added!==1?"s":""} · ${r.updated} atualizado${r.updated!==1?"s":""} ✓`, "good");
     }catch(e){ load(true); }
   };
+
   const addStatus=async(nome,cor)=>{
     setCustom(c=>[...c,{nome,cor}]);
-    try{ const r=await send({action:"addStatus", nome, cor}, `Status “${nome}” criado ✓`); if(r.statuses) setCustom(r.statuses); }catch(e){ load(true); }
+    try{ const r=await send({action:"addStatus", nome, cor}, `Status “${nome}” criado ✓`); if(r&&r.statuses) setCustom(r.statuses); }catch(e){ load(true); }
   };
   const delStatus=async(nome)=>{
     if(!window.confirm(`Apagar o status “${nome}”? Os envios que já usam ele continuam com o texto.`)) return;
     setCustom(c=>c.filter(s=>s.nome!==nome));
-    try{ const r=await send({action:"deleteStatus", nome}); if(r.statuses) setCustom(r.statuses); }catch(e){ load(true); }
+    try{ const r=await send({action:"deleteStatus", nome}); if(r&&r.statuses) setCustom(r.statuses); }catch(e){ load(true); }
   };
 
-  const onCopy=async code=>{ (await copy(code)) ? toast("Código copiado ✓","good") : toast("Não consegui copiar","warn"); };
-  const onShare=async env=>{
+  const onCopy=useCallback(async code=>{ (await copy(code)) ? toast("Código copiado ✓","good") : toast("Não consegui copiar","warn"); },[toast]);
+  const onShare=useCallback(async env=>{
     const url=trackUrl(env.rastreio);
     const texto=`Olá${env.nome?", "+env.nome.split(" ")[0]:""}! 👗 Seu pedido da QVestido já está a caminho.\nCódigo de rastreio: ${env.rastreio}\nAcompanhe aqui: ${url}`;
     if(navigator.share){
       try{ await navigator.share({title:"Rastreio QVestido", text:texto, url}); return; }catch(e){ if(e.name==="AbortError") return; }
     }
     (await copy(texto)) ? toast("Mensagem de rastreio copiada ✓","good") : toast("Não consegui copiar","warn");
-  };
+  },[toast]);
 
+  const openStatus=useCallback(e=>setModal({tipo:"status", envio:e}),[]);
+  const openEdit=useCallback(e=>setModal({tipo:"edit", envio:e}),[]);
+  const openObs=useCallback(e=>setModal({tipo:"obs", envio:e}),[]);
+
+  /* ---------- seleção ---------- */
+  const toggleOne=useCallback(id=>setSel(s=>{ const n=new Set(s); n.has(id)?n.delete(id):n.add(id); return n; }),[]);
+  const toggleGroup=useCallback((ids,marcar)=>setSel(s=>{
+    const n=new Set(s); ids.forEach(id=>marcar?n.add(id):n.delete(id)); return n;
+  }),[]);
+
+  /* ---------- filtro (calculado uma vez só) ---------- */
   const filtered=useMemo(()=>{
     const q=norm(filters.q);
+    const st=filters.status;
     return data.filter(r=>{
-      if(filters.status&&r.status!==filters.status) return false;
+      if(st.length && st.indexOf(r.status)<0) return false;
       if(filters.from&&(!r.faturamento||r.faturamento<filters.from)) return false;
       if(filters.to&&(!r.faturamento||r.faturamento>filters.to)) return false;
       if(q){ const hay=norm([r.nome,r.cpf,r.pedido,r.rastreio,r.obs].join(" ")); if(!hay.includes(q)) return false; }
@@ -1041,18 +1264,41 @@ function App(){
     });
   },[data,filters]);
 
+  const selecionarTudoFiltrado=()=>setSel(new Set(filtered.map(e=>e.id)));
+
+  const aplicarStatusEmLote=async(nome)=>{
+    const ids=[...sel];
+    if(!ids.length) return;
+    const setIds=new Set(ids);
+    const upds=dataRef.current.filter(e=>setIds.has(e.id)).map(e=>({...e,status:nome,statusManual:true}));
+    setData(d=>d.map(e=>setIds.has(e.id)?{...e,status:nome,statusManual:true}:e));
+    setSel(new Set());
+    try{ await send({action:"saveMany", envios:upds}, `${ids.length} envio${ids.length>1?"s":""} → ${nome} ✓`, ids); }
+    catch(e){ load(true); }
+  };
+  const apagarEmLote=async()=>{
+    const ids=[...sel];
+    if(!ids.length) return;
+    if(!window.confirm(`Apagar ${ids.length} envio${ids.length>1?"s":""}? Não dá pra desfazer.`)) return;
+    const setIds=new Set(ids);
+    setData(d=>d.filter(e=>!setIds.has(e.id)));
+    setSel(new Set());
+    try{ await send({action:"deleteMany", ids}, `${ids.length} envio${ids.length>1?"s":""} apagado${ids.length>1?"s":""}`, ids); }
+    catch(e){ load(true); }
+  };
+
   const onExport=()=>{
     if(!filtered.length){ toast("Nada para exportar","warn"); return; }
-    const aoa=[["Número do Pedido","Nome do contato","CPF/CNPJ","Cód. Rastreamento","Data de Faturamento","Status","Observações","Peças","Link Correios"]];
-    filtered.forEach(e=>aoa.push([e.pedido,e.nome,fmtCPF(e.cpf),e.rastreio,fmtDate(e.faturamento),e.status,e.obs||"",e.itens, e.rastreio?trackUrl(e.rastreio):""]));
+    const aoa=[["Número do Pedido","Nome do contato","CPF/CNPJ","Cód. Rastreamento","Data de Faturamento","Previsão de entrega","Status","Observações","Peças","Link Correios"]];
+    filtered.forEach(e=>aoa.push([e.pedido,e.nome,fmtCPF(e.cpf),e.rastreio,fmtDate(e.faturamento),fmtDate(e.previsao),e.status,e.obs||"",e.itens, e.rastreio?trackUrl(e.rastreio):""]));
     const ws=XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"]=[{wch:14},{wch:28},{wch:18},{wch:18},{wch:16},{wch:22},{wch:38},{wch:7},{wch:52}];
+    ws["!cols"]=[{wch:14},{wch:28},{wch:18},{wch:18},{wch:16},{wch:18},{wch:22},{wch:38},{wch:7},{wch:52}];
     const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Envios");
     XLSX.writeFile(wb,`qvestido_envios_${toISO(new Date())}.xlsx`);
     toast(`${filtered.length} envios exportados ✓`,"good");
   };
 
-  /* ---- render ---- */
+  /* ---------- render ---------- */
   if(!auth) return <Login theme={theme} setTheme={setTheme} onOk={()=>{ LS.set("qv_auth","ok"); setAuth(true); }}/>;
 
   return (<React.Fragment>
@@ -1070,9 +1316,9 @@ function App(){
         </button>
       </div>
       <div className="spacer"></div>
-      <div className={"sync"+(busy?" busy":(online?"":" off"))}>
+      <div className={"sync"+(busy>0?" busy":(online?"":" off"))}>
         <span className="pip"></span>
-        <span className="lbl">{busy?"Salvando…":(online?"Planilha conectada":"Offline")}</span>
+        <span className="lbl">{busy>0?"Salvando…":(online?"Planilha conectada":"Offline")}</span>
       </div>
       <button className="icon-btn" title="Recarregar da planilha" onClick={()=>load()}><Ic d={I.refresh} size={16}/></button>
       <button className="btn ghost sm" onClick={onExport}><Ic d={I.export} size={15}/> <span className="lbl">Exportar</span></button>
@@ -1084,24 +1330,39 @@ function App(){
       {loading ? <div className="boot"><div className="spin"></div><div>Buscando os envios na planilha…</div></div>
       : view==="envios" ? (
         <EnviosView
-          data={data} statuses={statuses} filters={filters} setFilters={setFilters}
+          data={data} rows={filtered} statuses={statuses} filters={filters} setFilters={setFilters}
           goImport={()=>setView("importar")}
-          onStatus={e=>setModal({tipo:"status", envio:e, cb:v=>setStatus(e,v)})}
-          onRemove={removeEnvio} onCopy={onCopy} onShare={onShare}
-          onEdit={e=>setModal({tipo:"edit", envio:e})}
-          onObs={e=>setModal({tipo:"obs", envio:e})}/>
+          sel={sel} onToggle={toggleOne} onToggleGroup={toggleGroup}
+          onStatus={openStatus} onRemove={removeEnvio} onCopy={onCopy} onShare={onShare}
+          onEdit={openEdit} onObs={openObs} onPrevisao={setPrevisao}/>
       ) : (
         <ImportView data={data} onImport={doImport} onClear={clearAll} toast={toast}/>
       )}
     </div>
 
-    {modal?.tipo==="edit" && <EditModal envio={modal.envio} statuses={statuses} onClose={()=>setModal(null)} onSave={saveEnvio}/>}
-    {modal?.tipo==="obs" && <ObsModal envio={modal.envio} onClose={()=>setModal(null)} onSave={saveEnvio}/>}
-    {modal?.tipo==="status" && <StatusModal statuses={statuses} atual={modal.envio?.status}
-      onPick={v=>{ modal.cb(v); }}
+    {view==="envios" && sel.size>0 && (
+      <div className="bulkbar">
+        <span className="cnt">{sel.size} selecionado{sel.size>1?"s":""}</span>
+        <button className="btn sm" onClick={()=>aplicarStatusEmLote("Entregue")}><Ic d={I.check} size={14}/> Marcar como entregue</button>
+        <span className="sep"></span>
+        <select className="input" value={bulkStatus} onChange={e=>setBulkStatus(e.target.value)} aria-label="Status para aplicar">
+          {statuses.map(s=><option key={s.nome} value={s.nome}>{s.nome}</option>)}
+        </select>
+        <button className="btn ghost sm" onClick={()=>aplicarStatusEmLote(bulkStatus)}>Aplicar</button>
+        <span className="sep"></span>
+        <button className="btn ghost sm" onClick={selecionarTudoFiltrado}>Selecionar os {filtered.length}</button>
+        <button className="btn ghost sm" onClick={apagarEmLote}><Ic d={I.trash} size={14}/></button>
+        <button className="mini" title="Limpar seleção" onClick={()=>setSel(new Set())}><Ic d={I.x} size={14}/></button>
+      </div>
+    )}
+
+    {modal && modal.tipo==="edit" && <EditModal envio={modal.envio} statuses={statuses} onClose={()=>setModal(null)} onSave={saveEnvio}/>}
+    {modal && modal.tipo==="obs" && <ObsModal envio={modal.envio} onClose={()=>setModal(null)} onSave={saveEnvio}/>}
+    {modal && modal.tipo==="status" && <StatusModal statuses={statuses} atual={modal.envio.status}
+      onPick={v=>setStatus(modal.envio,v)}
       onAdd={addStatus} onDelete={delStatus}
-      onClose={()=>setModal(modal.voltar||null)}/>}
-    {modal?.tipo==="tema" && <ThemeModal theme={theme} setTheme={setTheme} onClose={()=>setModal(null)}/>}
+      onClose={()=>setModal(null)}/>}
+    {modal && modal.tipo==="tema" && <ThemeModal theme={theme} setTheme={setTheme} onClose={()=>setModal(null)}/>}
 
     <div className="toast-wrap">{toasts.map(t=><div key={t.id} className={"toast"+(t.kind?" "+t.kind:"")}>{t.msg}</div>)}</div>
   </React.Fragment>);
